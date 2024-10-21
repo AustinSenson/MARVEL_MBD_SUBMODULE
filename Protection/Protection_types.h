@@ -7,9 +7,9 @@
  *
  * Code generation for model "Protection".
  *
- * Model version              : 4.0
+ * Model version              : 4.4
  * Simulink Coder version : 9.8 (R2022b) 13-May-2022
- * C source code generated on : Mon Oct  7 18:51:48 2024
+ * C source code generated on : Fri Oct 11 19:06:44 2024
  *
  * Target selection: grt.tlc
  * Note: GRT includes extra infrastructure and instrumentation for prototyping
@@ -107,7 +107,7 @@ typedef struct {
   int32_T Protections_OCD_WarningTimeout_msec;
   int32_T Protections_OCD_ErrorTimeout_msec;
   int32_T Protections_OCD_RecoveryTimeout_msec;
-  Temperature Temperature[5];
+  Temperature Temperature[2];
   int32_T Protections_SlowCh_OV_Warning_mV;
   int32_T Protections_SlowCh_OV_Error_mV;
   int32_T Protections_SlowCh_OV_Recovery_mV;
@@ -219,6 +219,8 @@ typedef struct {
   uint16_T trickleChargingLimit;
   uint16_T transitionVoltageCV;
   real_T TrickleChargingCurrent;
+  real_T iR_chargingWait_SOCcpct;
+  real_T iR_startSOC_cpct;
   uint8_T IRCycleCount;
   real32_T IRTransition_msec;
   real32_T IRPulseDropTime_sec;
