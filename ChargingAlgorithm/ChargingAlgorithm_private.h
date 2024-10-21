@@ -72,17 +72,17 @@ Verification pane for ERT based targets, which will disable the \
 preprocessor word size checks.
 #endif
 
-extern real_T rt_roundd_snf(real_T u);
+extern real_T rt_roundd_snf_chg(real_T u);
 extern void MultiWordSignedWrap(const uint32_T u1[], int32_T n1, uint32_T n2,
   uint32_T y[]);
-extern void sMultiWordMul(const uint32_T u1[], int32_T n1, const uint32_T u2[],
+extern void sMultiWordMul_chg(const uint32_T u1[], int32_T n1, const uint32_T u2[],
   int32_T n2, uint32_T y[], int32_T n);
 extern boolean_T sMultiWordGt(const uint32_T u1[], const uint32_T u2[], int32_T
   n);
-extern int32_T sMultiWordCmp(const uint32_T u1[], const uint32_T u2[], int32_T n);
+extern int32_T sMultiWordCmp_chg(const uint32_T u1[], const uint32_T u2[], int32_T n);
 extern boolean_T sMultiWordLt(const uint32_T u1[], const uint32_T u2[], int32_T
   n);
-extern real32_T sMultiWord2Single(const uint32_T u1[], int32_T n1, int32_T e1);
+extern real32_T sMultiWord2Single_chg(const uint32_T u1[], int32_T n1, int32_T e1);
 extern real32_T uMultiWordSingle(const uint32_T u1[], int32_T n1, int32_T e1);
 extern void MultiWordUnsignedWrap(const uint32_T u1[], int32_T n1, uint32_T n2,
   uint32_T y[]);

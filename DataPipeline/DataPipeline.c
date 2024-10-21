@@ -100,10 +100,10 @@ const DataPipelineBus DataPipeline_rtZDataPipelineBus = { 0,/* Current_mA */
 
 boolean_T sMultiWordGe(const uint32_T u1[], const uint32_T u2[], int32_T n)
 {
-  return sMultiWordCmp(u1, u2, n) >= 0;
+  return sMultiWordCmp_dp(u1, u2, n) >= 0;
 }
 
-int32_T sMultiWordCmp(const uint32_T u1[], const uint32_T u2[], int32_T n)
+int32_T sMultiWordCmp_dp(const uint32_T u1[], const uint32_T u2[], int32_T n)
 {
   int32_T y;
   uint32_T su1;
@@ -191,7 +191,7 @@ void sLong2MultiWord(int32_T u, uint32_T y[], int32_T n)
   }
 }
 
-void sMultiWordMul(const uint32_T u1[], int32_T n1, const uint32_T u2[], int32_T
+void sMultiWordMul_dp(const uint32_T u1[], int32_T n1, const uint32_T u2[], int32_T
                    n2, uint32_T y[], int32_T n)
 {
   int32_T i;
@@ -278,7 +278,7 @@ void sMultiWordMul(const uint32_T u1[], int32_T n1, const uint32_T u2[], int32_T
   }
 }
 
-real32_T sMultiWord2Single(const uint32_T u1[], int32_T n1, int32_T e1)
+real32_T sMultiWord2Single_dp(const uint32_T u1[], int32_T n1, int32_T e1)
 {
   int32_T exp_0;
   int32_T i;
@@ -306,7 +306,7 @@ real32_T sMultiWord2Single(const uint32_T u1[], int32_T n1, int32_T e1)
   return y;
 }
 
-void mul_wide_s32(int32_T in0, int32_T in1, uint32_T *ptrOutBitsHi, uint32_T
+void mul_wide_s32_dp(int32_T in0, int32_T in1, uint32_T *ptrOutBitsHi, uint32_T
                   *ptrOutBitsLo)
 {
   uint32_T absIn0;
@@ -352,12 +352,12 @@ void mul_wide_s32(int32_T in0, int32_T in1, uint32_T *ptrOutBitsHi, uint32_T
   *ptrOutBitsLo = in0Lo;
 }
 
-int32_T mul_s32_sat(int32_T a, int32_T b)
+int32_T mul_s32_sat_dp(int32_T a, int32_T b)
 {
   int32_T result;
   uint32_T u32_chi;
   uint32_T u32_clo;
-  mul_wide_s32(a, b, &u32_chi, &u32_clo);
+  mul_wide_s32_dp(a, b, &u32_chi, &u32_clo);
   if (((int32_T)u32_chi > 0) || ((u32_chi == 0U) && (u32_clo >= 2147483648U))) {
     result = MAX_int32_T;
   } else if (((int32_T)u32_chi < -1) || (((int32_T)u32_chi == -1) && (u32_clo <
@@ -590,7 +590,7 @@ void DataPipeline_step(void)
     /* Gain: '<S1>/Gain' */
     tmp_1 = 1932735283U;
     tmp_2 = (uint32_T)DataPipeline_U.Thresholds.ChargeDetectionThreshold_mA;
-    sMultiWordMul(&tmp_1, 1, &tmp_2, 1, &tmp_0.chunks[0U], 2);
+    sMultiWordMul_dp(&tmp_1, 1, &tmp_2, 1, &tmp_0.chunks[0U], 2);
     DataPipeline_Y.DataPipelineb.isChargeEn = sMultiWordGe(&tmp.chunks[0U],
       &tmp_0.chunks[0U], 2);
   }
@@ -656,12 +656,12 @@ void DataPipeline_step(void)
   tmp_1 = (uint32_T)DataPipeline_P.nCells_parallel;
   tmp_2 = (uint32_T)
     DataPipeline_B.sf_DynamicCurrentLimits_perPara.DCL_DisChargingCurrent_A;
-  sMultiWordMul(&tmp_1, 1, &tmp_2, 1, &tmp_3.chunks[0U], 2);
+  sMultiWordMul_dp(&tmp_1, 1, &tmp_2, 1, &tmp_3.chunks[0U], 2);
 
   /* Gain: '<S1>/Gain7' */
-  DataPipeline_Y.DataPipelineb.DCL_DisChargingCurrent_A = sMultiWord2Single
+  DataPipeline_Y.DataPipelineb.DCL_DisChargingCurrent_A = sMultiWord2Single_dp
     (&DataPipeline_ConstP.Gain7_Gain.chunks[0], 2, 0) * 1.8189894E-12F *
-    sMultiWord2Single(&tmp_3.chunks[0U], 2, 0);
+    sMultiWord2Single_dp(&tmp_3.chunks[0U], 2, 0);
 
   /* Gain: '<S1>/Gain10' incorporates:
    *  Gain: '<S1>/Gain9'
@@ -679,19 +679,19 @@ void DataPipeline_step(void)
 
   /* Gain: '<S1>/Gain3' */
   tmp_2 = (uint32_T)DataPipeline_B.sf_I2t_perParallelCell.i2t_Charge_A2sec;
-  sMultiWordMul(&tmp_1, 1, &tmp_2, 1, &tmp_4.chunks[0U], 2);
+  sMultiWordMul_dp(&tmp_1, 1, &tmp_2, 1, &tmp_4.chunks[0U], 2);
 
   /* Gain: '<S1>/Gain4' */
   DataPipeline_Y.DataPipelineb.i2t_ChargingCurrent_A2sec = 0.9F *
-    sMultiWord2Single(&tmp_4.chunks[0U], 2, 0);
+    sMultiWord2Single_dp(&tmp_4.chunks[0U], 2, 0);
 
   /* Gain: '<S1>/Gain5' */
   tmp_2 = (uint32_T)DataPipeline_B.sf_I2t_perParallelCell.i2t_Discharge_A2sec;
-  sMultiWordMul(&tmp_1, 1, &tmp_2, 1, &tmp_5.chunks[0U], 2);
+  sMultiWordMul_dp(&tmp_1, 1, &tmp_2, 1, &tmp_5.chunks[0U], 2);
 
   /* Gain: '<S1>/Gain8' */
   DataPipeline_Y.DataPipelineb.i2t_DisChargingCurrent_A2sec = 0.9F *
-    sMultiWord2Single(&tmp_5.chunks[0U], 2, 0);
+    sMultiWord2Single_dp(&tmp_5.chunks[0U], 2, 0);
 
   /* BusCreator: '<S1>/Bus Creator3' incorporates:
    *  Inport: '<Root>/BalanceEn_atRest'

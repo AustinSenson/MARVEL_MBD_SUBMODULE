@@ -25,6 +25,6 @@
 #include "zero_crossing_types.h"
 #include "Protection_types.h"
 
-extern real_T rt_roundd_snf(real_T u);
+extern real_T rt_roundd_snf_p(real_T u);
 
 #endif                                 /* RTW_HEADER_Protection_private_h_ */

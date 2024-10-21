@@ -24,6 +24,6 @@
 #include "multiword_types.h"
 #include "CellBalancing_types.h"
 
-extern real_T rt_roundd_snf(real_T u);
+extern real_T rt_roundd_snf_cb(real_T u);
 
 #endif                                 /* RTW_HEADER_CellBalancing_private_h_ */

@@ -15,7 +15,7 @@
 #include "DataPipeline_private.h"
 #include <math.h>
 
-real_T rt_roundd_snf(real_T u)
+real_T rt_roundd_snf_dp(real_T u)
 {
   real_T y;
   if (fabs(u) < 4.503599627370496E+15) {
@@ -39,7 +39,7 @@ void DynamicCurrentLimits_perParalle(int32_T rtu_SOC, real_T rtu_Temperature_C,
 {
   real_T tmp;
   int32_T tmp_0;
-  tmp = rt_roundd_snf((real_T)rtu_SOC * rtu_Temperature_C);
+  tmp = rt_roundd_snf_dp((real_T)rtu_SOC * rtu_Temperature_C);
   if (tmp < 2.147483648E+9) {
     if (tmp >= -2.147483648E+9) {
       tmp_0 = (int32_T)tmp;
@@ -50,6 +50,6 @@ void DynamicCurrentLimits_perParalle(int32_T rtu_SOC, real_T rtu_Temperature_C,
     tmp_0 = MAX_int32_T;
   }
 
-  localB->DCL_DisChargingCurrent_A = (int32_T)rt_roundd_snf((real_T)tmp_0 / 20.0);
+  localB->DCL_DisChargingCurrent_A = (int32_T)rt_roundd_snf_dp((real_T)tmp_0 / 20.0);
   localB->DCL_arcReactor_A = 12.0;
 }

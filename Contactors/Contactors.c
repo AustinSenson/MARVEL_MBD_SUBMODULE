@@ -142,7 +142,7 @@ static void Contac_PreCharging_Substate_Old(void)
     }
 
     /* Inport: '<Root>/Thresholds' */
-    if ((real_T)(uint32_T)((int32_T)Contactors_DW.durationCounter_1 * 100) >
+    if ((real_T)(uint32_T)((int32_T)Contactors_DW.durationCounter_1 * Contactors_U.looptimeContactors) >
         Contactors_U.Thresholds.PreToOpeningSubstate_msec) {
       exit_internal_PreCharging_Sub_m();
       Contactors_DW.is_ContactorOperations = Contacto_IN_NegContact_Check_02;
@@ -568,7 +568,7 @@ static void Contac_PreCharging_Substate_New(void)
    *  Inport: '<Root>/DataPipeline'
    *  Inport: '<Root>/ProtectionOutput'
    */
-  if ((real_T)(uint32_T)((int32_T)Contactors_DW.durationCounter_1_f * 100) >
+  if ((real_T)(uint32_T)((int32_T)Contactors_DW.durationCounter_1_f * Contactors_U.looptimeContactors) >
       Contactors_U.Thresholds.PreToOpeningSubstate_msec) {
     exit_internal_PreCharging_Subst();
     Contactors_DW.is_ContactorOperations = Contacto_IN_NegContact_Check_02;
@@ -1210,7 +1210,7 @@ void Contactors_step(void)
           Contactors_DW.durationCounter_1_b = 0U;
         }
 
-        if ((real_T)(uint32_T)((int32_T)Contactors_DW.durationCounter_1_b * 100)
+        if ((real_T)(uint32_T)((int32_T)Contactors_DW.durationCounter_1_b * Contactors_U.looptimeContactors)
             > Contactors_U.Thresholds.FlagDebounceTime_msec) {
           Contactors_DW.is_ContactorOperations = Contacto_IN_NegContact_Check_02;
 

@@ -82,6 +82,7 @@ typedef struct {
   ContState ContactorsState;           /* '<Root>/ContactorsState' */
   ProtectionState_Out ProtectionOutput;/* '<Root>/ProtectionOutput' */
   ThresholdsBus Thresholds;            /* '<Root>/Thresholds' */
+  real_T looptimeStateMachine; /* Added variable */
 } ExtU_HighLevelStatemachine_T;
 
 /* External outputs (root outports fed by signals with default storage) */

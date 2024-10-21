@@ -78,6 +78,7 @@ typedef struct {
   int32_T StLineEq_varB;               /* '<Root>/StLineEq_varB' */
   ThresholdsBus Thresholds;            /* '<Root>/Thresholds' */
   DataPipelineBus DataPipeline;        /* '<Root>/DataPipeline' */
+  real_T looptimeCellBalancing; /* Added variable */
 } ExtU_CellBalancing_T;
 
 /* External outputs (root outports fed by signals with default storage) */

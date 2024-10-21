@@ -19,7 +19,7 @@ void VoltagemV_Vs_CapacitymAh(int32_T rtu_Voltage_mV,
   B_VoltagemV_Vs_CapacitymAh_T *localB)
 {
   int32_T tmp;
-  tmp = mul_s32_sat(rtu_Voltage_mV, 50);
+  tmp = mul_s32_sat_cc(rtu_Voltage_mV, 50);
   if (tmp < 0) {
     tmp = 0;
   }

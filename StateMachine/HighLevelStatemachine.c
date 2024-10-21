@@ -98,7 +98,7 @@ static void HighLevelStatemachin_Fault_Mode(void)
      *  Inport: '<Root>/DataPipeline'
      */
     if ((real_T)(uint32_T)((int32_T)
-                           HighLevelStatemachine_DW.durationCounter_2_lq * 100) >
+                           HighLevelStatemachine_DW.durationCounter_2_lq * HighLevelStatemachine_U.looptimeStateMachine) >
         HighLevelStatemachine_U.Thresholds.FaultsModeTimeout_msec) {
       HighLevelStatemachine_DW.durationCounter_1_jt = 0U;
       HighLevelStatemachine_DW.is_Fault_Mode = HighLevelSt_IN_PermanentFailure;
@@ -113,7 +113,7 @@ static void HighLevelStatemachin_Fault_Mode(void)
       }
 
       if ((real_T)(uint32_T)((int32_T)
-                             HighLevelStatemachine_DW.durationCounter_1_dz * 100)
+                             HighLevelStatemachine_DW.durationCounter_1_dz * HighLevelStatemachine_U.looptimeStateMachine)
           > HighLevelStatemachine_U.Thresholds.ServiceModeTimeout_msec) {
         HighLevelStatemachine_DW.is_Fault_Mode = HighLevelSta_IN_NO_ACTIVE_CHILD;
         HighLevelStatemachine_DW.is_HighLevelStatemachine =
@@ -140,7 +140,7 @@ static void HighLevelStatemachin_Fault_Mode(void)
 
     /* Inport: '<Root>/Thresholds' */
     if ((real_T)(uint32_T)((int32_T)
-                           HighLevelStatemachine_DW.durationCounter_1_jt * 100) >
+                           HighLevelStatemachine_DW.durationCounter_1_jt * HighLevelStatemachine_U.looptimeStateMachine) >
         HighLevelStatemachine_U.Thresholds.ServiceModeTimeout_msec) {
       HighLevelStatemachine_DW.is_Fault_Mode = HighLevelSta_IN_NO_ACTIVE_CHILD;
       HighLevelStatemachine_DW.is_HighLevelStatemachine =
@@ -169,7 +169,7 @@ static void HighLevelStatemachin_Fault_Mode(void)
      *  Inport: '<Root>/DataPipeline'
      */
     if ((real_T)(uint32_T)((int32_T)
-                           HighLevelStatemachine_DW.durationCounter_2_bc * 100) >
+                           HighLevelStatemachine_DW.durationCounter_2_bc * HighLevelStatemachine_U.looptimeStateMachine) >
         HighLevelStatemachine_U.Thresholds.FaultsModeTimeout_msec) {
       HighLevelStatemachine_DW.durationCounter_2_lq = 0U;
       HighLevelStatemachine_DW.durationCounter_1_dz = 0U;
@@ -185,7 +185,7 @@ static void HighLevelStatemachin_Fault_Mode(void)
       }
 
       if ((real_T)(uint32_T)((int32_T)
-                             HighLevelStatemachine_DW.durationCounter_1_k * 100)
+                             HighLevelStatemachine_DW.durationCounter_1_k * HighLevelStatemachine_U.looptimeStateMachine)
           > HighLevelStatemachine_U.Thresholds.ServiceModeTimeout_msec) {
         HighLevelStatemachine_DW.is_Fault_Mode = HighLevelSta_IN_NO_ACTIVE_CHILD;
         HighLevelStatemachine_DW.is_HighLevelStatemachine =
@@ -256,7 +256,7 @@ static void HighLevelStatemach_FastCharging(void)
 
       /* Inport: '<Root>/ProtectionOutput' */
       if ((real_T)(uint32_T)((int32_T)
-                             HighLevelStatemachine_DW.durationCounter_2_b * 100)
+                             HighLevelStatemachine_DW.durationCounter_2_b * HighLevelStatemachine_U.looptimeStateMachine)
           > HighLevelStatemachine_U.Thresholds.NormalModeTimeout_msec) {
         HighLevelStatemachine_DW.durationCounter_4 = 0U;
         HighLevelStatemachine_DW.durationCounter_3_a = 0U;
@@ -350,7 +350,7 @@ static void HighLevelStatemach_SlowCharging(void)
 
       /* Inport: '<Root>/DataPipeline' */
       if ((real_T)(uint32_T)((int32_T)
-                             HighLevelStatemachine_DW.durationCounter_1_h * 100)
+                             HighLevelStatemachine_DW.durationCounter_1_h * HighLevelStatemachine_U.looptimeStateMachine)
           > HighLevelStatemachine_U.Thresholds.FaultsModeTimeout_msec) {
         HighLevelStatemachine_DW.is_HighLevelStatemachine =
           HighLevelStatemac_IN_Fault_Mode;
@@ -430,7 +430,7 @@ static void HighLevel_HighLevelStatemachine(void)
 
       /* Inport: '<Root>/DataPipeline' */
       if ((real_T)(uint32_T)((int32_T)
-                             HighLevelStatemachine_DW.durationCounter_2_l * 100)
+                             HighLevelStatemachine_DW.durationCounter_2_l * HighLevelStatemachine_U.looptimeStateMachine)
           > HighLevelStatemachine_U.Thresholds.NormalModeTimeout_msec) {
         HighLevelStatemachine_DW.durationCounter_4_o = 0U;
         HighLevelStatemachine_DW.durationCounter_3 = 0U;
@@ -450,7 +450,7 @@ static void HighLevel_HighLevelStatemachine(void)
 
         /* Inport: '<Root>/ProtectionOutput' */
         if ((real_T)(uint32_T)((int32_T)
-                               HighLevelStatemachine_DW.durationCounter_4 * 100)
+                               HighLevelStatemachine_DW.durationCounter_4 * HighLevelStatemachine_U.looptimeStateMachine)
             > HighLevelStatemachine_U.Thresholds.NormalModeTimeout_msec) {
           HighLevelStatemachine_DW.durationCounter_2_g = 0U;
           HighLevelStatemachine_DW.durationCounter_1_a = 0U;
@@ -521,7 +521,7 @@ static void HighLevel_HighLevelStatemachine(void)
 
       /* Outport: '<Root>/HighLevelStateMode' */
       if ((real_T)(uint32_T)((int32_T)
-                             HighLevelStatemachine_DW.durationCounter_4_o * 100)
+                             HighLevelStatemachine_DW.durationCounter_4_o * HighLevelStatemachine_U.looptimeStateMachine)
           > HighLevelStatemachine_U.Thresholds.NormalModeTimeout_msec) {
         HighLevelStatemachine_DW.durationCounter_4_e = 0U;
         HighLevelStatemachine_DW.durationCounter_3_g = 0U;
@@ -541,7 +541,7 @@ static void HighLevel_HighLevelStatemachine(void)
 
         /* Inport: '<Root>/DataPipeline' */
         if ((real_T)(uint32_T)((int32_T)
-                               HighLevelStatemachine_DW.durationCounter_2 * 100)
+                               HighLevelStatemachine_DW.durationCounter_2 * HighLevelStatemachine_U.looptimeStateMachine)
             > HighLevelStatemachine_U.Thresholds.PowerSaverModeTimeout_msec) {
           HighLevelStatemachine_DW.durationCounter_1_n = 0U;
           HighLevelStatemachine_DW.is_HighLevelStatemachine =
@@ -600,7 +600,7 @@ static void HighLevel_HighLevelStatemachine(void)
       }
 
       if ((real_T)(uint32_T)((int32_T)
-                             HighLevelStatemachine_DW.durationCounter_1_a * 100)
+                             HighLevelStatemachine_DW.durationCounter_1_a * HighLevelStatemachine_U.looptimeStateMachine)
           > HighLevelStatemachine_U.Thresholds.FaultsModeTimeout_msec) {
         HighLevelStatemachine_DW.is_HighLevelStatemachine =
           HighLevelStatemac_IN_Fault_Mode;
@@ -693,7 +693,7 @@ static void HighLevelStatemachine_BMS_State(void)
        *  Inport: '<Root>/ContactorCommand'
        */
       if ((real_T)(uint32_T)((int32_T)
-                             HighLevelStatemachine_DW.durationCounter_1_m * 100)
+                             HighLevelStatemachine_DW.durationCounter_1_m * HighLevelStatemachine_U.looptimeStateMachine)
           >
           HighLevelStatemachine_U.Thresholds.BMS_ActivatingToError_Timeout_msec)
       {
@@ -768,7 +768,7 @@ static void HighLevelStatemachine_BMS_State(void)
 
       /* Inport: '<Root>/Thresholds' */
       if ((real_T)(uint32_T)((int32_T)
-                             HighLevelStatemachine_DW.durationCounter_1_p * 100)
+                             HighLevelStatemachine_DW.durationCounter_1_p * HighLevelStatemachine_U.looptimeStateMachine)
           >
           HighLevelStatemachine_U.Thresholds.BMS_ErrorToActivating_Timeout_msec)
       {

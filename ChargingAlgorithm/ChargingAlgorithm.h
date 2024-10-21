@@ -90,6 +90,7 @@ typedef struct {
   real_T IR_calcEnable;                /* '<Root>/IR_calcEnable' */
   real_T maxAllowedImb_mv;             /* '<Root>/maxAllowedImb_mv' */
   DataPipelineBus DataPipeline;        /* '<Root>/DataPipeline' */
+  real_T looptimeCharging; /* Added variable */
 } ExtU_ChargingAlgorithm_T;
 
 /* External outputs (root outports fed by signals with default storage) */

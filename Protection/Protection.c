@@ -294,7 +294,7 @@ static void Protection_Voltage_Protection(void)
     /* Inport: '<Root>/Thresholds' incorporates:
      *  Inport: '<Root>/DataPipeline'
      */
-    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_my * 100) >
+    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_my * Protection_U.looptimeProtection) >
         Protection_U.Thresholds.Protections_UV_NoErrorTimeout_msec) {
       Protection_DW.durationCounter_2_e = 0U;
       Protection_DW.durationCounter_1_c = 0U;
@@ -309,7 +309,7 @@ static void Protection_Voltage_Protection(void)
         Protection_DW.durationCounter_2_ej = 0U;
       }
 
-      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_ej * 100) >
+      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_ej * Protection_U.looptimeProtection) >
           Protection_U.Thresholds.Protections_OV_NoErrorTimeout_msec) {
         Protection_DW.durationCounter_2_od = 0U;
         Protection_DW.durationCounter_1_gb = 0U;
@@ -332,7 +332,7 @@ static void Protection_Voltage_Protection(void)
     }
 
     /* Inport: '<Root>/Thresholds' */
-    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_l * 100) >
+    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_l * Protection_U.looptimeProtection) >
         Protection_U.Thresholds.Protections_OV_ErrorTimeout_msec) {
       Protection_DW.durationCounter_2_m = 0U;
       Protection_DW.durationCounter_1_nw = 0U;
@@ -356,7 +356,7 @@ static void Protection_Voltage_Protection(void)
     /* Inport: '<Root>/Thresholds' incorporates:
      *  Inport: '<Root>/DataPipeline'
      */
-    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_nw * 100) >
+    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_nw * Protection_U.looptimeProtection) >
         Protection_U.Thresholds.Protections_OV_RecoveryTimeout_msec) {
       Protection_DW.durationCounter_2_ej = 0U;
       Protection_DW.durationCounter_1_my = 0U;
@@ -369,7 +369,7 @@ static void Protection_Voltage_Protection(void)
         Protection_DW.durationCounter_2_m = 0U;
       }
 
-      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_m * 100) >
+      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_m * Protection_U.looptimeProtection) >
           Protection_U.Thresholds.Protections_OV_WarningTimeout_msec) {
         Protection_DW.durationCounter_1_l = 0U;
         Protection_DW.is_Voltage_Protection = Protection_IN_OV_Error;
@@ -392,7 +392,7 @@ static void Protection_Voltage_Protection(void)
     /* Inport: '<Root>/Thresholds' incorporates:
      *  Inport: '<Root>/DataPipeline'
      */
-    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_gb * 100) >
+    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_gb * Protection_U.looptimeProtection) >
         Protection_U.Thresholds.Protections_OV_WarningTimeout_msec) {
       Protection_DW.durationCounter_2_ej = 0U;
       Protection_DW.durationCounter_1_my = 0U;
@@ -407,7 +407,7 @@ static void Protection_Voltage_Protection(void)
         Protection_DW.durationCounter_2_od = 0U;
       }
 
-      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_od * 100) >
+      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_od * Protection_U.looptimeProtection) >
           Protection_U.Thresholds.Protections_OV_WarningTimeout_msec) {
         Protection_DW.durationCounter_1_l = 0U;
         Protection_DW.is_Voltage_Protection = Protection_IN_OV_Error;
@@ -431,7 +431,7 @@ static void Protection_Voltage_Protection(void)
     }
 
     /* Inport: '<Root>/Thresholds' */
-    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_h * 100) >
+    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_h * Protection_U.looptimeProtection) >
         Protection_U.Thresholds.Protections_UV_ErrorTimeout_msec) {
       Protection_DW.durationCounter_2_k = 0U;
       Protection_DW.durationCounter_1_bu = 0U;
@@ -457,7 +457,7 @@ static void Protection_Voltage_Protection(void)
     /* Inport: '<Root>/Thresholds' incorporates:
      *  Inport: '<Root>/DataPipeline'
      */
-    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_k * 100) >
+    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_k * Protection_U.looptimeProtection) >
         Protection_U.Thresholds.Protections_UV_RecoveryTimeout_msec) {
       Protection_DW.durationCounter_2_ej = 0U;
       Protection_DW.durationCounter_1_my = 0U;
@@ -470,7 +470,7 @@ static void Protection_Voltage_Protection(void)
         Protection_DW.durationCounter_1_bu = 0U;
       }
 
-      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_bu * 100) >
+      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_bu * Protection_U.looptimeProtection) >
           Protection_U.Thresholds.Protections_UV_WarningTimeout_msec) {
         Protection_DW.durationCounter_1_h = 0U;
         Protection_DW.is_Voltage_Protection = Protection_IN_UV_Error;
@@ -496,7 +496,7 @@ static void Protection_Voltage_Protection(void)
     /* Inport: '<Root>/Thresholds' incorporates:
      *  Inport: '<Root>/DataPipeline'
      */
-    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_e * 100) >
+    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_e * Protection_U.looptimeProtection) >
         Protection_U.Thresholds.Protections_OV_WarningTimeout_msec) {
       Protection_DW.durationCounter_2_ej = 0U;
       Protection_DW.durationCounter_1_my = 0U;
@@ -510,7 +510,7 @@ static void Protection_Voltage_Protection(void)
         Protection_DW.durationCounter_1_c = 0U;
       }
 
-      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_c * 100) >
+      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_c * Protection_U.looptimeProtection) >
           Protection_U.Thresholds.Protections_UV_WarningTimeout_msec) {
         Protection_DW.durationCounter_1_h = 0U;
         Protection_DW.is_Voltage_Protection = Protection_IN_UV_Error;
@@ -522,7 +522,7 @@ static void Protection_Voltage_Protection(void)
   }
 }
 
-real_T rt_roundd_snf(real_T u)
+real_T rt_roundd_snf_p(real_T u)
 {
   real_T y;
   if (fabs(u) < 4.503599627370496E+15) {
@@ -582,13 +582,13 @@ static void Protection_eFuse_Melting(void)
     tmp = Protection_U.DataPipeline.Current_mA;
   }
 
-  if (!(rt_roundd_snf((real_T)tmp / 1000.0) < fabsf(Protection_DW.DCL_Current_A)))
+  if (!(rt_roundd_snf_p((real_T)tmp / 1000.0) < fabsf(Protection_DW.DCL_Current_A)))
   {
     Protection_DW.durationCounter_1_j = 0U;
   }
 
   /* Inport: '<Root>/Thresholds' */
-  if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_j * 100) >=
+  if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_j * Protection_U.looptimeProtection) >=
       Protection_U.Thresholds.i2tTimeout_msec) {
     Protection_DW.durationCounter_1_g = 0U;
     Protection_DW.is_Current_Protection = IN_OverCurrent_DynamicCurrentLi;
@@ -606,7 +606,7 @@ static void Protection_eFuse_Melting(void)
     }
 
     guard1 = false;
-    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_c * 100) >=
+    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_c * Protection_U.looptimeProtection) >=
         Protection_U.Thresholds.eFuseMeltingTimeout_msec) {
       guard1 = true;
     } else {
@@ -617,7 +617,7 @@ static void Protection_eFuse_Melting(void)
         Protection_DW.durationCounter_3 = 0U;
       }
 
-      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_3 * 100) >=
+      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_3 * Protection_U.looptimeProtection) >=
           Protection_U.Thresholds.eFuseMeltingTimeout_msec) {
         guard1 = true;
       } else {
@@ -640,7 +640,7 @@ static void Protection_eFuse_Melting(void)
           tmp = Protection_U.DataPipeline.Current_mA;
         }
 
-        if (!(rt_roundd_snf((real_T)tmp / 1000.0) > fabsf
+        if (!(rt_roundd_snf_p((real_T)tmp / 1000.0) > fabsf
               (Protection_DW.DCL_Current_A))) {
           Protection_DW.durationCounter_1_g = 0U;
         }
@@ -656,7 +656,7 @@ static void Protection_eFuse_Melting(void)
           tmp = Protection_U.DataPipeline.Current_mA;
         }
 
-        if (!(rt_roundd_snf((real_T)tmp / 1000.0) < fabsf
+        if (!(rt_roundd_snf_p((real_T)tmp / 1000.0) < fabsf
               (Protection_DW.DCL_Current_A))) {
           Protection_DW.durationCounter_1_j = 0U;
         }
@@ -672,7 +672,7 @@ static void Protection_eFuse_Melting(void)
           tmp = Protection_U.DataPipeline.Current_mA;
         }
 
-        CurrentDiff_A = (real32_T)rt_roundd_snf((real_T)tmp / 1000.0) - fabsf
+        CurrentDiff_A = (real32_T)rt_roundd_snf_p((real_T)tmp / 1000.0) - fabsf
           (Protection_DW.DCL_Current_A);
 
         /* Inport: '<Root>/DataPipeline' */
@@ -740,7 +740,7 @@ static void Protection_i2tCalculation_DCL(void)
       tmp = Protection_U.DataPipeline.Current_mA;
     }
 
-    CurrentDiff_A = (real32_T)rt_roundd_snf((real_T)tmp / 1000.0) - fabsf
+    CurrentDiff_A = (real32_T)rt_roundd_snf_p((real_T)tmp / 1000.0) - fabsf
       (Protection_DW.DCL_Current_A);
 
     /* Inport: '<Root>/DataPipeline' */
@@ -831,7 +831,7 @@ static void Protection_Current_Protection(void)
         Protection_DW.durationCounter_1_iq = 0U;
       }
 
-      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_iq * 100) >
+      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_iq * Protection_U.looptimeProtection) >
           Protection_U.Thresholds.Protections_OCD_NoErrorTimeout_msec) {
         Protection_DW.durationCounter_2 = 0U;
         Protection_DW.durationCounter_1_or = 0U;
@@ -883,7 +883,7 @@ static void Protection_Current_Protection(void)
     /* Inport: '<Root>/Thresholds' incorporates:
      *  Inport: '<Root>/DataPipeline'
      */
-    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_m * 100) >
+    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_m * Protection_U.looptimeProtection) >
         Protection_U.Thresholds.Protections_OCC_RecoveryTimeout_msec) {
       Protection_DW.durationCounter_2_d = 0U;
       Protection_DW.durationCounter_1_iq = 0U;
@@ -907,7 +907,7 @@ static void Protection_Current_Protection(void)
         Protection_DW.durationCounter_2_b = 0U;
       }
 
-      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_b * 100) >
+      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_b * Protection_U.looptimeProtection) >
           Protection_U.Thresholds.Protections_OCC_WarningTimeout_msec) {
         Protection_DW.is_Current_Protection = Protection_IN_OCC_Error;
         Protection_DW.temporalCounter_i1 = 0U;
@@ -939,7 +939,7 @@ static void Protection_Current_Protection(void)
     /* Inport: '<Root>/Thresholds' incorporates:
      *  Inport: '<Root>/DataPipeline'
      */
-    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_j * 100) >
+    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_j * Protection_U.looptimeProtection) >
         Protection_U.Thresholds.Protections_OCC_WarningTimeout_msec) {
       Protection_DW.is_Current_Protection = Protection_IN_OCC_Error;
       Protection_DW.temporalCounter_i1 = 0U;
@@ -962,7 +962,7 @@ static void Protection_Current_Protection(void)
         Protection_DW.durationCounter_1_b1 = 0U;
       }
 
-      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_b1 * 100) >
+      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_b1 * Protection_U.looptimeProtection) >
           Protection_U.Thresholds.Protections_OCC_WarningTimeout_msec) {
         Protection_DW.durationCounter_2_d = 0U;
         Protection_DW.durationCounter_1_iq = 0U;
@@ -1010,7 +1010,7 @@ static void Protection_Current_Protection(void)
     /* Inport: '<Root>/Thresholds' incorporates:
      *  Inport: '<Root>/DataPipeline'
      */
-    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_o * 100) >
+    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_o * Protection_U.looptimeProtection) >
         Protection_U.Thresholds.Protections_OCD_RecoveryTimeout_msec) {
       Protection_DW.durationCounter_2_d = 0U;
       Protection_DW.durationCounter_1_iq = 0U;
@@ -1034,7 +1034,7 @@ static void Protection_Current_Protection(void)
         Protection_DW.durationCounter_1_b = 0U;
       }
 
-      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_b * 100) >
+      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_b * Protection_U.looptimeProtection) >
           Protection_U.Thresholds.Protections_OCD_WarningTimeout_msec) {
         Protection_DW.is_Current_Protection = Protection_IN_OCD_Error;
         Protection_DW.temporalCounter_i1 = 0U;
@@ -1066,7 +1066,7 @@ static void Protection_Current_Protection(void)
     /* Inport: '<Root>/Thresholds' incorporates:
      *  Inport: '<Root>/DataPipeline'
      */
-    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_or * 100) >
+    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_or * Protection_U.looptimeProtection) >
         Protection_U.Thresholds.Protections_OCD_WarningTimeout_msec) {
       Protection_DW.is_Current_Protection = Protection_IN_OCD_Error;
       Protection_DW.temporalCounter_i1 = 0U;
@@ -1089,7 +1089,7 @@ static void Protection_Current_Protection(void)
         Protection_DW.durationCounter_2 = 0U;
       }
 
-      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2 * 100) >
+      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2 * Protection_U.looptimeProtection) >
           Protection_U.Thresholds.Protections_OCD_WarningTimeout_msec) {
         Protection_DW.durationCounter_2_d = 0U;
         Protection_DW.durationCounter_1_iq = 0U;
@@ -1112,13 +1112,13 @@ static void Protection_Current_Protection(void)
       tmp = Protection_U.DataPipeline.Current_mA;
     }
 
-    if (!(rt_roundd_snf((real_T)tmp / 1000.0) > fabsf
+    if (!(rt_roundd_snf_p((real_T)tmp / 1000.0) > fabsf
           (Protection_DW.DCL_Current_A))) {
       Protection_DW.durationCounter_1_g = 0U;
     }
 
     /* Inport: '<Root>/Thresholds' */
-    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_g * 100) >=
+    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_g * Protection_U.looptimeProtection) >=
         Protection_U.Thresholds.i2tTimeout_msec) {
       Protection_DW.durationCounter_3 = 0U;
       Protection_DW.durationCounter_2_c = 0U;
@@ -1143,7 +1143,7 @@ static void Protection_Current_Protection(void)
         tmp = Protection_U.DataPipeline.Current_mA;
       }
 
-      if (!(rt_roundd_snf((real_T)tmp / 1000.0) > fabsf
+      if (!(rt_roundd_snf_p((real_T)tmp / 1000.0) > fabsf
             (Protection_DW.DCL_Current_A))) {
         Protection_DW.durationCounter_1_g = 0U;
       }
@@ -1159,7 +1159,7 @@ static void Protection_Current_Protection(void)
         tmp = Protection_U.DataPipeline.Current_mA;
       }
 
-      if (!(rt_roundd_snf((real_T)tmp / 1000.0) < fabsf
+      if (!(rt_roundd_snf_p((real_T)tmp / 1000.0) < fabsf
             (Protection_DW.DCL_Current_A))) {
         Protection_DW.durationCounter_1_j = 0U;
       }
@@ -1206,7 +1206,7 @@ static void Protection_Current_Protection(void)
         Protection_DW.durationCounter_2_d = 0U;
       }
 
-      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_d * 100) >
+      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_d * Protection_U.looptimeProtection) >
           Protection_U.Thresholds.Protections_OCC_NoErrorTimeout_msec) {
         Protection_DW.durationCounter_2_j = 0U;
         Protection_DW.durationCounter_1_b1 = 0U;
@@ -1235,7 +1235,7 @@ static void Protection_UTD_Warning(void)
   /* Inport: '<Root>/Thresholds' incorporates:
    *  Inport: '<Root>/DataPipeline'
    */
-  if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_f * 100) >
+  if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_f * Protection_U.looptimeProtection) >
       Protection_U.Thresholds.Temperature[0].Protections_UTD_WarningTimeout_msec)
   {
     Protection_DW.durationCounter_1_nd = 0U;
@@ -1248,7 +1248,7 @@ static void Protection_UTD_Warning(void)
       Protection_DW.durationCounter_2_da = 0U;
     }
 
-    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_da * 100) >=
+    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_da * Protection_U.looptimeProtection) >=
         Protection_U.Thresholds.Temperature[0].
         Protections_UTD_WarningTimeout_msec) {
       Protection_DW.durationCounter_4 = 0U;
@@ -1278,7 +1278,7 @@ static void Protection_No_Error_Temperature(void)
   }
 
   /* Inport: '<Root>/Thresholds' */
-  if (((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_h * 100) >=
+  if (((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_h * Protection_U.looptimeProtection) >=
        Protection_U.Thresholds.Temperature[0].
        Protections_UTC_NoErrorTimeout_msec) &&
       Protection_U.DataPipeline.VCU.isChargerConnected) {
@@ -1294,7 +1294,7 @@ static void Protection_No_Error_Temperature(void)
       Protection_DW.durationCounter_4 = 0U;
     }
 
-    if (((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_4 * 100) >=
+    if (((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_4 * Protection_U.looptimeProtection) >=
          Protection_U.Thresholds.Temperature[0].
          Protections_OTC_NoErrorTimeout_msec) &&
         Protection_U.DataPipeline.VCU.isChargerConnected) {
@@ -1310,7 +1310,7 @@ static void Protection_No_Error_Temperature(void)
         Protection_DW.durationCounter_3_k = 0U;
       }
 
-      if (((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_3_k * 100) >=
+      if (((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_3_k * Protection_U.looptimeProtection) >=
            Protection_U.Thresholds.Temperature[0].
            Protections_OTD_NoErrorTimeout_msec) &&
           (!Protection_U.DataPipeline.VCU.isChargerConnected)) {
@@ -1360,7 +1360,7 @@ static void Protection_UTD_Recovery(void)
   /* Inport: '<Root>/Thresholds' incorporates:
    *  Inport: '<Root>/DataPipeline'
    */
-  if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_d5 * 100) >=
+  if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_d5 * Protection_U.looptimeProtection) >=
       Protection_U.Thresholds.Temperature[0].
       Protections_UTD_RecoveryTimeout_msec) {
     Protection_DW.durationCounter_4 = 0U;
@@ -1377,7 +1377,7 @@ static void Protection_UTD_Recovery(void)
       Protection_DW.durationCounter_1_nb = 0U;
     }
 
-    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_nb * 100) >
+    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_nb * Protection_U.looptimeProtection) >
         Protection_U.Thresholds.Temperature[0].
         Protections_UTD_WarningTimeout_msec) {
       Protection_DW.durationCounter_1_nd = 0U;
@@ -1409,7 +1409,7 @@ static void P_Temperature_Protection_Group1(void)
     }
 
     /* Inport: '<Root>/Thresholds' */
-    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_kn * 100) >=
+    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_kn * Protection_U.looptimeProtection) >=
         Protection_U.Thresholds.Temperature[0].Protections_OTC_ErrorTimeout_msec)
     {
       Protection_DW.durationCounter_2_je = 0U;
@@ -1435,7 +1435,7 @@ static void P_Temperature_Protection_Group1(void)
     /* Inport: '<Root>/Thresholds' incorporates:
      *  Inport: '<Root>/DataPipeline'
      */
-    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_fh * 100) >=
+    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_fh * Protection_U.looptimeProtection) >=
         Protection_U.Thresholds.Temperature[0].
         Protections_OTC_RecoveryTimeout_msec) {
       Protection_DW.durationCounter_4 = 0U;
@@ -1452,7 +1452,7 @@ static void P_Temperature_Protection_Group1(void)
         Protection_DW.durationCounter_2_je = 0U;
       }
 
-      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_je * 100) >=
+      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_je * Protection_U.looptimeProtection) >=
           Protection_U.Thresholds.Temperature[0].
           Protections_OTC_WarningTimeout_msec) {
         Protection_DW.durationCounter_1_kn = 0U;
@@ -1478,7 +1478,7 @@ static void P_Temperature_Protection_Group1(void)
     /* Inport: '<Root>/Thresholds' incorporates:
      *  Inport: '<Root>/DataPipeline'
      */
-    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_fs * 100) >=
+    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_fs * Protection_U.looptimeProtection) >=
         Protection_U.Thresholds.Temperature[0].
         Protections_OTC_WarningTimeout_msec) {
       Protection_DW.durationCounter_4 = 0U;
@@ -1495,7 +1495,7 @@ static void P_Temperature_Protection_Group1(void)
         Protection_DW.durationCounter_2_f = 0U;
       }
 
-      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_f * 100) >=
+      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_f * Protection_U.looptimeProtection) >=
           Protection_U.Thresholds.Temperature[0].
           Protections_OTC_WarningTimeout_msec) {
         Protection_DW.durationCounter_1_kn = 0U;
@@ -1519,7 +1519,7 @@ static void P_Temperature_Protection_Group1(void)
     }
 
     /* Inport: '<Root>/Thresholds' */
-    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_lr * 100) >=
+    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_lr * Protection_U.looptimeProtection) >=
         Protection_U.Thresholds.Temperature[0].Protections_OTD_ErrorTimeout_msec)
     {
       Protection_DW.durationCounter_2_d1 = 0U;
@@ -1545,7 +1545,7 @@ static void P_Temperature_Protection_Group1(void)
     /* Inport: '<Root>/Thresholds' incorporates:
      *  Inport: '<Root>/DataPipeline'
      */
-    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_bi * 100) >=
+    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_bi * Protection_U.looptimeProtection) >=
         Protection_U.Thresholds.Temperature[0].
         Protections_OTD_RecoveryTimeout_msec) {
       Protection_DW.durationCounter_4 = 0U;
@@ -1562,7 +1562,7 @@ static void P_Temperature_Protection_Group1(void)
         Protection_DW.durationCounter_2_d1 = 0U;
       }
 
-      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_d1 * 100) >=
+      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_d1 * Protection_U.looptimeProtection) >=
           Protection_U.Thresholds.Temperature[0].
           Protections_OTD_WarningTimeout_msec) {
         Protection_DW.durationCounter_1_lr = 0U;
@@ -1588,7 +1588,7 @@ static void P_Temperature_Protection_Group1(void)
     /* Inport: '<Root>/Thresholds' incorporates:
      *  Inport: '<Root>/DataPipeline'
      */
-    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_l * 100) >=
+    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_l * Protection_U.looptimeProtection) >=
         Protection_U.Thresholds.Temperature[0].
         Protections_OTD_WarningTimeout_msec) {
       Protection_DW.durationCounter_1_lr = 0U;
@@ -1601,7 +1601,7 @@ static void P_Temperature_Protection_Group1(void)
         Protection_DW.durationCounter_1_fj = 0U;
       }
 
-      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_fj * 100) >=
+      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_fj * Protection_U.looptimeProtection) >=
           Protection_U.Thresholds.Temperature[0].
           Protections_OTD_WarningTimeout_msec) {
         Protection_DW.durationCounter_4 = 0U;
@@ -1629,7 +1629,7 @@ static void P_Temperature_Protection_Group1(void)
     }
 
     /* Inport: '<Root>/Thresholds' */
-    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_d * 100) >=
+    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_d * Protection_U.looptimeProtection) >=
         Protection_U.Thresholds.Temperature[0].Protections_UTC_ErrorTimeout_msec)
     {
       Protection_DW.durationCounter_2_k5 = 0U;
@@ -1655,7 +1655,7 @@ static void P_Temperature_Protection_Group1(void)
     /* Inport: '<Root>/Thresholds' incorporates:
      *  Inport: '<Root>/DataPipeline'
      */
-    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_k5 * 100) >=
+    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_k5 * Protection_U.looptimeProtection) >=
         Protection_U.Thresholds.Temperature[0].
         Protections_UTC_RecoveryTimeout_msec) {
       Protection_DW.durationCounter_4 = 0U;
@@ -1672,7 +1672,7 @@ static void P_Temperature_Protection_Group1(void)
         Protection_DW.durationCounter_1_fp = 0U;
       }
 
-      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_fp * 100) >=
+      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_fp * Protection_U.looptimeProtection) >=
           Protection_U.Thresholds.Temperature[0].
           Protections_UTC_WarningTimeout_msec) {
         Protection_DW.durationCounter_1_d = 0U;
@@ -1698,7 +1698,7 @@ static void P_Temperature_Protection_Group1(void)
     /* Inport: '<Root>/Thresholds' incorporates:
      *  Inport: '<Root>/DataPipeline'
      */
-    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_mf * 100) >=
+    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_mf * Protection_U.looptimeProtection) >=
         Protection_U.Thresholds.Temperature[0].
         Protections_UTC_WarningTimeout_msec) {
       Protection_DW.durationCounter_1_d = 0U;
@@ -1711,7 +1711,7 @@ static void P_Temperature_Protection_Group1(void)
         Protection_DW.durationCounter_2_er = 0U;
       }
 
-      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_er * 100) >=
+      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_er * Protection_U.looptimeProtection) >=
           Protection_U.Thresholds.Temperature[0].
           Protections_UTC_WarningTimeout_msec) {
         Protection_DW.durationCounter_4 = 0U;
@@ -1739,7 +1739,7 @@ static void P_Temperature_Protection_Group1(void)
     }
 
     /* Inport: '<Root>/Thresholds' */
-    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_nd * 100) >=
+    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_nd * Protection_U.looptimeProtection) >=
         Protection_U.Thresholds.Temperature[0].Protections_UTD_ErrorTimeout_msec)
     {
       Protection_DW.durationCounter_2_d5 = 0U;
@@ -1778,7 +1778,7 @@ static void Protection_UTD_Warning_g(void)
   /* Inport: '<Root>/Thresholds' incorporates:
    *  Inport: '<Root>/DataPipeline'
    */
-  if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_dg * 100) >=
+  if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_dg * Protection_U.looptimeProtection) >=
       Protection_U.Thresholds.Temperature[1].Protections_UTD_WarningTimeout_msec)
   {
     Protection_DW.durationCounter_1_il = 0U;
@@ -1791,7 +1791,7 @@ static void Protection_UTD_Warning_g(void)
       Protection_DW.durationCounter_2_n = 0U;
     }
 
-    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_n * 100) >=
+    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_n * Protection_U.looptimeProtection) >=
         Protection_U.Thresholds.Temperature[1].
         Protections_UTD_WarningTimeout_msec) {
       Protection_DW.durationCounter_4_c = 0U;
@@ -1821,7 +1821,7 @@ static void Protecti_No_Error_Temperature_p(void)
   }
 
   /* Inport: '<Root>/Thresholds' */
-  if (((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_ox * 100) >=
+  if (((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_ox * Protection_U.looptimeProtection) >=
        Protection_U.Thresholds.Temperature[1].
        Protections_UTC_WarningTimeout_msec) &&
       Protection_U.DataPipeline.VCU.isChargerConnected) {
@@ -1837,7 +1837,7 @@ static void Protecti_No_Error_Temperature_p(void)
       Protection_DW.durationCounter_4_c = 0U;
     }
 
-    if (((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_4_c * 100) >=
+    if (((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_4_c * Protection_U.looptimeProtection) >=
          Protection_U.Thresholds.Temperature[1].
          Protections_OTC_WarningTimeout_msec) &&
         Protection_U.DataPipeline.VCU.isChargerConnected) {
@@ -1853,7 +1853,7 @@ static void Protecti_No_Error_Temperature_p(void)
         Protection_DW.durationCounter_3_g = 0U;
       }
 
-      if (((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_3_g * 100) >
+      if (((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_3_g * Protection_U.looptimeProtection) >
            Protection_U.Thresholds.Temperature[1].
            Protections_OTD_WarningTimeout_msec) &&
           (!Protection_U.DataPipeline.VCU.isChargerConnected)) {
@@ -1903,7 +1903,7 @@ static void Protection_UTD_Recovery_b(void)
   /* Inport: '<Root>/Thresholds' incorporates:
    *  Inport: '<Root>/DataPipeline'
    */
-  if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_e5 * 100) >=
+  if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_e5 * Protection_U.looptimeProtection) >=
       Protection_U.Thresholds.Temperature[1].
       Protections_UTD_RecoveryTimeout_msec) {
     Protection_DW.durationCounter_4_c = 0U;
@@ -1920,7 +1920,7 @@ static void Protection_UTD_Recovery_b(void)
       Protection_DW.durationCounter_1_e5 = 0U;
     }
 
-    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_e5 * 100) >=
+    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_e5 * Protection_U.looptimeProtection) >=
         Protection_U.Thresholds.Temperature[1].
         Protections_UTD_WarningTimeout_msec) {
       Protection_DW.durationCounter_1_il = 0U;
@@ -1952,7 +1952,7 @@ static void P_Temperature_Protection_Group2(void)
     }
 
     /* Inport: '<Root>/Thresholds' */
-    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_lb * 100) >=
+    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_lb * Protection_U.looptimeProtection) >=
         Protection_U.Thresholds.Temperature[1].Protections_OTC_ErrorTimeout_msec)
     {
       Protection_DW.durationCounter_2_i = 0U;
@@ -1978,7 +1978,7 @@ static void P_Temperature_Protection_Group2(void)
     /* Inport: '<Root>/Thresholds' incorporates:
      *  Inport: '<Root>/DataPipeline'
      */
-    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_b0 * 100) >=
+    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_b0 * Protection_U.looptimeProtection) >=
         Protection_U.Thresholds.Temperature[1].
         Protections_OTC_RecoveryTimeout_msec) {
       Protection_DW.durationCounter_4_c = 0U;
@@ -1995,7 +1995,7 @@ static void P_Temperature_Protection_Group2(void)
         Protection_DW.durationCounter_2_i = 0U;
       }
 
-      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_i * 100) >=
+      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_i * Protection_U.looptimeProtection) >=
           Protection_U.Thresholds.Temperature[1].
           Protections_OTC_WarningTimeout_msec) {
         Protection_DW.durationCounter_1_lb = 0U;
@@ -2021,7 +2021,7 @@ static void P_Temperature_Protection_Group2(void)
     /* Inport: '<Root>/Thresholds' incorporates:
      *  Inport: '<Root>/DataPipeline'
      */
-    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_aa * 100) >=
+    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_aa * Protection_U.looptimeProtection) >=
         Protection_U.Thresholds.Temperature[1].
         Protections_OTC_WarningTimeout_msec) {
       Protection_DW.durationCounter_4_c = 0U;
@@ -2038,7 +2038,7 @@ static void P_Temperature_Protection_Group2(void)
         Protection_DW.durationCounter_2_a = 0U;
       }
 
-      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_a * 100) >=
+      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_a * Protection_U.looptimeProtection) >=
           Protection_U.Thresholds.Temperature[1].
           Protections_OTC_WarningTimeout_msec) {
         Protection_DW.durationCounter_1_lb = 0U;
@@ -2062,7 +2062,7 @@ static void P_Temperature_Protection_Group2(void)
     }
 
     /* Inport: '<Root>/Thresholds' */
-    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_jw * 100) >=
+    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_jw * Protection_U.looptimeProtection) >=
         Protection_U.Thresholds.Temperature[1].Protections_OTD_ErrorTimeout_msec)
     {
       Protection_DW.durationCounter_2_bg = 0U;
@@ -2088,7 +2088,7 @@ static void P_Temperature_Protection_Group2(void)
     /* Inport: '<Root>/Thresholds' incorporates:
      *  Inport: '<Root>/DataPipeline'
      */
-    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_py * 100) >=
+    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_py * Protection_U.looptimeProtection) >=
         Protection_U.Thresholds.Temperature[1].
         Protections_OTD_RecoveryTimeout_msec) {
       Protection_DW.durationCounter_4_c = 0U;
@@ -2105,7 +2105,7 @@ static void P_Temperature_Protection_Group2(void)
         Protection_DW.durationCounter_2_bg = 0U;
       }
 
-      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_bg * 100) >=
+      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_bg * Protection_U.looptimeProtection) >=
           Protection_U.Thresholds.Temperature[1].
           Protections_OTD_WarningTimeout_msec) {
         Protection_DW.durationCounter_1_jw = 0U;
@@ -2131,7 +2131,7 @@ static void P_Temperature_Protection_Group2(void)
     /* Inport: '<Root>/Thresholds' incorporates:
      *  Inport: '<Root>/DataPipeline'
      */
-    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_mn * 100) >=
+    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_mn * Protection_U.looptimeProtection) >=
         Protection_U.Thresholds.Temperature[1].
         Protections_OTD_WarningTimeout_msec) {
       Protection_DW.durationCounter_1_jw = 0U;
@@ -2144,7 +2144,7 @@ static void P_Temperature_Protection_Group2(void)
         Protection_DW.durationCounter_1_pe = 0U;
       }
 
-      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_pe * 100) >=
+      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_pe * Protection_U.looptimeProtection) >=
           Protection_U.Thresholds.Temperature[1].
           Protections_OTD_WarningTimeout_msec) {
         Protection_DW.durationCounter_4_c = 0U;
@@ -2172,7 +2172,7 @@ static void P_Temperature_Protection_Group2(void)
     }
 
     /* Inport: '<Root>/Thresholds' */
-    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_gw * 100) >=
+    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_gw * Protection_U.looptimeProtection) >=
         Protection_U.Thresholds.Temperature[1].Protections_UTC_ErrorTimeout_msec)
     {
       Protection_DW.durationCounter_2_eh = 0U;
@@ -2198,7 +2198,7 @@ static void P_Temperature_Protection_Group2(void)
     /* Inport: '<Root>/Thresholds' incorporates:
      *  Inport: '<Root>/DataPipeline'
      */
-    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_eh * 100) >=
+    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_eh * Protection_U.looptimeProtection) >=
         Protection_U.Thresholds.Temperature[1].
         Protections_UTC_RecoveryTimeout_msec) {
       Protection_DW.durationCounter_4_c = 0U;
@@ -2215,7 +2215,7 @@ static void P_Temperature_Protection_Group2(void)
         Protection_DW.durationCounter_1_p = 0U;
       }
 
-      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_p * 100) >=
+      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_p * Protection_U.looptimeProtection) >=
           Protection_U.Thresholds.Temperature[1].
           Protections_UTC_WarningTimeout_msec) {
         Protection_DW.durationCounter_1_gw = 0U;
@@ -2241,7 +2241,7 @@ static void P_Temperature_Protection_Group2(void)
     /* Inport: '<Root>/Thresholds' incorporates:
      *  Inport: '<Root>/DataPipeline'
      */
-    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_n3 * 100) >=
+    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_n3 * Protection_U.looptimeProtection) >=
         Protection_U.Thresholds.Temperature[1].
         Protections_UTC_WarningTimeout_msec) {
       Protection_DW.durationCounter_1_gw = 0U;
@@ -2254,7 +2254,7 @@ static void P_Temperature_Protection_Group2(void)
         Protection_DW.durationCounter_2_ec = 0U;
       }
 
-      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_ec * 100) >=
+      if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_2_ec * Protection_U.looptimeProtection) >=
           Protection_U.Thresholds.Temperature[1].
           Protections_UTC_WarningTimeout_msec) {
         Protection_DW.durationCounter_4_c = 0U;
@@ -2282,7 +2282,7 @@ static void P_Temperature_Protection_Group2(void)
     }
 
     /* Inport: '<Root>/Thresholds' */
-    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_il * 100) >=
+    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_il * Protection_U.looptimeProtection) >=
         Protection_U.Thresholds.Temperature[1].Protections_UTD_ErrorTimeout_msec)
     {
       Protection_DW.durationCounter_2_e5 = 0U;
@@ -2312,7 +2312,7 @@ static void Protection_ThermalRunaway(void)
     Protection_B.ThermalRunaway = Error;
 
     /* Inport: '<Root>/Thresholds' */
-    if ((uint32_T)((int32_T)Protection_DW.durationCounter_1_i * 100) >=
+    if ((uint32_T)((int32_T)Protection_DW.durationCounter_1_i * Protection_U.looptimeProtection) >=
         Protection_U.Thresholds.ThermalRunawayErrorTimeout_msec) {
       Protection_DW.is_ThermalRunaway = IN_ThermalRunaway_PermanentFail;
       Protection_B.ThermalRunaway = PermanentFail;
@@ -2332,7 +2332,7 @@ static void Protection_ThermalRunaway(void)
       Protection_DW.durationCounter_1 = 0U;
     }
 
-    if ((uint32_T)((int32_T)Protection_DW.durationCounter_1 * 100) >=
+    if ((uint32_T)((int32_T)Protection_DW.durationCounter_1 * Protection_U.looptimeProtection) >=
         Protection_U.Thresholds.ThermalRunawayWarningTimeout_msec) {
       Protection_DW.durationCounter_1_n = 0U;
       Protection_DW.is_ThermalRunaway = Prote_IN_ThermalRunaway_Warning;
@@ -2358,7 +2358,7 @@ static void Protection_ThermalRunaway(void)
       Protection_DW.durationCounter_1_n = 0U;
     }
 
-    if ((uint32_T)((int32_T)Protection_DW.durationCounter_1_n * 100) >=
+    if ((uint32_T)((int32_T)Protection_DW.durationCounter_1_n * Protection_U.looptimeProtection) >=
         Protection_U.Thresholds.ThermalRunawayErrorTimeout_msec) {
       Protection_DW.durationCounter_1_i = 0U;
       Protection_DW.is_ThermalRunaway = Protect_IN_ThermalRunaway_Error;
@@ -2383,7 +2383,7 @@ static void Protection_TemperatureGradient(void)
     }
 
     /* Inport: '<Root>/Thresholds' */
-    if ((uint32_T)((int32_T)Protection_DW.durationCounter_1_a * 100) >=
+    if ((uint32_T)((int32_T)Protection_DW.durationCounter_1_a * Protection_U.looptimeProtection) >=
         Protection_U.Thresholds.TemperatureGradientTimeout_msec) {
       Protection_DW.durationCounter_1_k = 0U;
       Protection_DW.is_TemperatureGradient = Protection_IN_Lobby;
@@ -2402,7 +2402,7 @@ static void Protection_TemperatureGradient(void)
     }
 
     /* Inport: '<Root>/Thresholds' */
-    if ((uint32_T)((int32_T)Protection_DW.durationCounter_1_k * 100) >=
+    if ((uint32_T)((int32_T)Protection_DW.durationCounter_1_k * Protection_U.looptimeProtection) >=
         Protection_U.Thresholds.TemperatureGradientTimeout_msec) {
       Protection_DW.durationCounter_1_a = 0U;
       Protection_DW.is_TemperatureGradient = Protection_IN_Error;
@@ -2426,7 +2426,7 @@ static void Protection_HighImbalanceFlag(void)
     }
 
     /* Inport: '<Root>/Thresholds' */
-    if ((uint32_T)((int32_T)Protection_DW.durationCounter_1_an * 100) >=
+    if ((uint32_T)((int32_T)Protection_DW.durationCounter_1_an * Protection_U.looptimeProtection) >=
         Protection_U.Thresholds.HighImbalanceFlagTimeout_msec) {
       Protection_DW.durationCounter_1_gc = 0U;
       Protection_DW.is_HighImbalanceFlag = Protection_IN_Lobby;
@@ -2445,7 +2445,7 @@ static void Protection_HighImbalanceFlag(void)
     }
 
     /* Inport: '<Root>/Thresholds' */
-    if ((uint32_T)((int32_T)Protection_DW.durationCounter_1_gc * 100) >=
+    if ((uint32_T)((int32_T)Protection_DW.durationCounter_1_gc * Protection_U.looptimeProtection) >=
         Protection_U.Thresholds.HighImbalanceFlagTimeout_msec) {
       Protection_DW.durationCounter_1_an = 0U;
       Protection_DW.is_HighImbalanceFlag = Protection_IN_Error;
@@ -2477,7 +2477,7 @@ static void Protection_ShortCircuitDetect(void)
       Protection_DW.durationCounter_1_e = 0U;
     }
 
-    if ((uint32_T)((int32_T)Protection_DW.durationCounter_1_e * 100) >=
+    if ((uint32_T)((int32_T)Protection_DW.durationCounter_1_e * Protection_U.looptimeProtection) >=
         Protection_U.Thresholds.ShortCircuitDetect_msec) {
       Protection_DW.durationCounter_1_ac = 0U;
       Protection_DW.is_ShortCircuitDetect = Protection_IN_Lobby;
@@ -2505,7 +2505,7 @@ static void Protection_ShortCircuitDetect(void)
       Protection_DW.durationCounter_1_ac = 0U;
     }
 
-    if ((uint32_T)((int32_T)Protection_DW.durationCounter_1_ac * 100) >=
+    if ((uint32_T)((int32_T)Protection_DW.durationCounter_1_ac * Protection_U.looptimeProtection) >=
         Protection_U.Thresholds.ShortCircuitDetect_msec) {
       Protection_DW.durationCounter_1_e = 0U;
       Protection_DW.is_ShortCircuitDetect = Protection_IN_Error;
@@ -2526,7 +2526,7 @@ static void Protection_SuddenVoltageDrop(void)
       Protection_DW.durationCounter_1_o = 0U;
     }
 
-    if ((uint32_T)((int32_T)Protection_DW.durationCounter_1_o * 100) >=
+    if ((uint32_T)((int32_T)Protection_DW.durationCounter_1_o * Protection_U.looptimeProtection) >=
         Protection_U.Thresholds.SuddenVoltageDropTimeout_msec) {
       Protection_DW.durationCounter_1_ik = 0U;
       Protection_DW.is_SuddenVoltageDrop = Protection_IN_Lobby;
@@ -2542,7 +2542,7 @@ static void Protection_SuddenVoltageDrop(void)
       Protection_DW.durationCounter_1_ik = 0U;
     }
 
-    if ((uint32_T)((int32_T)Protection_DW.durationCounter_1_ik * 100) >=
+    if ((uint32_T)((int32_T)Protection_DW.durationCounter_1_ik * Protection_U.looptimeProtection) >=
         Protection_U.Thresholds.SuddenVoltageDropTimeout_msec) {
       Protection_DW.durationCounter_1_o = 0U;
       Protection_DW.is_SuddenVoltageDrop = Protection_IN_Error;
@@ -2668,7 +2668,7 @@ static void Protectio_DCL_CurrentProtection(void)
     if (!Protection_U.DataPipeline.VCU.isChargerConnected) {
       guard2 = true;
     } else {
-      j_x = (int32_T)rt_roundd_snf((real_T)Protection_U.DataPipeline.Current_mA /
+      j_x = (int32_T)rt_roundd_snf_p((real_T)Protection_U.DataPipeline.Current_mA /
         1000.0);
       if (j_x < 0) {
         j_x = -j_x;
@@ -2687,7 +2687,7 @@ static void Protectio_DCL_CurrentProtection(void)
     if (!Protection_U.DataPipeline.VCU.isChargerConnected) {
       guard3 = true;
     } else {
-      j_x = (int32_T)rt_roundd_snf((real_T)Protection_U.DataPipeline.Current_mA /
+      j_x = (int32_T)rt_roundd_snf_p((real_T)Protection_U.DataPipeline.Current_mA /
         1000.0);
       if (j_x < 0) {
         j_x = -j_x;
@@ -2713,7 +2713,7 @@ static void Protectio_DCL_CurrentProtection(void)
     if (Protection_U.DataPipeline.VCU.isChargerConnected) {
       guard4 = true;
     } else {
-      j_x = (int32_T)rt_roundd_snf((real_T)Protection_U.DataPipeline.Current_mA /
+      j_x = (int32_T)rt_roundd_snf_p((real_T)Protection_U.DataPipeline.Current_mA /
         1000.0);
       if (j_x < 0) {
         j_x = -j_x;
@@ -2732,7 +2732,7 @@ static void Protectio_DCL_CurrentProtection(void)
     if (Protection_U.DataPipeline.VCU.isChargerConnected) {
       guard5 = true;
     } else {
-      j_x = (int32_T)rt_roundd_snf((real_T)Protection_U.DataPipeline.Current_mA /
+      j_x = (int32_T)rt_roundd_snf_p((real_T)Protection_U.DataPipeline.Current_mA /
         1000.0);
       if (j_x < 0) {
         j_x = -j_x;
@@ -2757,7 +2757,7 @@ static void Protectio_DCL_CurrentProtection(void)
 
     /* Inport: '<Root>/DataPipeline' */
     if (!Protection_U.DataPipeline.VCU.isChargerConnected) {
-      j_x = (int32_T)rt_roundd_snf((real_T)Protection_U.DataPipeline.Current_mA /
+      j_x = (int32_T)rt_roundd_snf_p((real_T)Protection_U.DataPipeline.Current_mA /
         1000.0);
       if (j_x < 0) {
         j_x = -j_x;
@@ -2787,7 +2787,7 @@ static void Protectio_DCL_CurrentProtection(void)
     } else if (Protection_U.DataPipeline.VCU.isChargerConnected) {
       guard7 = true;
     } else {
-      j_x = (int32_T)rt_roundd_snf((real_T)Protection_U.DataPipeline.Current_mA /
+      j_x = (int32_T)rt_roundd_snf_p((real_T)Protection_U.DataPipeline.Current_mA /
         1000.0);
       if (j_x < 0) {
         j_x = -j_x;
@@ -2810,7 +2810,7 @@ static void Protectio_DCL_CurrentProtection(void)
 
       /* Inport: '<Root>/DataPipeline' */
     } else if (Protection_U.DataPipeline.VCU.isChargerConnected) {
-      j_x = (int32_T)rt_roundd_snf((real_T)Protection_U.DataPipeline.Current_mA /
+      j_x = (int32_T)rt_roundd_snf_p((real_T)Protection_U.DataPipeline.Current_mA /
         1000.0);
       if (j_x < 0) {
         j_x = -j_x;
@@ -2835,7 +2835,7 @@ static void Protectio_DCL_CurrentProtection(void)
     } else if (Protection_U.DataPipeline.VCU.isChargerConnected) {
       guard8 = true;
     } else {
-      j_x = (int32_T)rt_roundd_snf((real_T)Protection_U.DataPipeline.Current_mA /
+      j_x = (int32_T)rt_roundd_snf_p((real_T)Protection_U.DataPipeline.Current_mA /
         1000.0);
       if (j_x < 0) {
         j_x = -j_x;
@@ -2858,7 +2858,7 @@ static void Protectio_DCL_CurrentProtection(void)
 
       /* Inport: '<Root>/DataPipeline' */
     } else if (!Protection_U.DataPipeline.VCU.isChargerConnected) {
-      j_x = (int32_T)rt_roundd_snf((real_T)Protection_U.DataPipeline.Current_mA /
+      j_x = (int32_T)rt_roundd_snf_p((real_T)Protection_U.DataPipeline.Current_mA /
         1000.0);
       if (j_x < 0) {
         j_x = -j_x;
@@ -2883,7 +2883,7 @@ static void Protectio_DCL_CurrentProtection(void)
 
       /* Inport: '<Root>/DataPipeline' */
     } else if (!Protection_U.DataPipeline.VCU.isChargerConnected) {
-      j_x = (int32_T)rt_roundd_snf((real_T)Protection_U.DataPipeline.Current_mA /
+      j_x = (int32_T)rt_roundd_snf_p((real_T)Protection_U.DataPipeline.Current_mA /
         1000.0);
       if (j_x < 0) {
         j_x = -j_x;
@@ -2910,7 +2910,7 @@ static void Protectio_DCL_CurrentProtection(void)
     } else if (!Protection_U.DataPipeline.VCU.isChargerConnected) {
       guard1 = true;
     } else {
-      j_x = (int32_T)rt_roundd_snf((real_T)Protection_U.DataPipeline.Current_mA /
+      j_x = (int32_T)rt_roundd_snf_p((real_T)Protection_U.DataPipeline.Current_mA /
         1000.0);
       if (j_x < 0) {
         j_x = -j_x;
@@ -2938,7 +2938,7 @@ static void Protectio_DCL_CurrentProtection(void)
 
   if (guard6) {
     if (Protection_U.DataPipeline.VCU.isChargerConnected) {
-      j_x = (int32_T)rt_roundd_snf((real_T)Protection_U.DataPipeline.Current_mA /
+      j_x = (int32_T)rt_roundd_snf_p((real_T)Protection_U.DataPipeline.Current_mA /
         1000.0);
       if (j_x < 0) {
         j_x = -j_x;
@@ -3198,7 +3198,7 @@ void Protection_step(void)
       Protection_DW.durationCounter_1_e2 = 0U;
     }
 
-    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_e2 * 100) ==
+    if ((real_T)(uint32_T)((int32_T)Protection_DW.durationCounter_1_e2 * Protection_U.looptimeProtection) ==
         Protection_U.Thresholds.Protections_AverageTimeforProtection_msec) {
       Protection_DW.is_c30_Protection = Protection_IN_Integrator_Reset;
       Protection_DW.temporalCounter_i1_g = 0U;
@@ -3477,7 +3477,7 @@ void Protection_step(void)
   }
 
   tmp = fabsf(Protection_DW.DCL_Current_A);
-  if (rt_roundd_snf((real_T)rtb_Trigger / 1000.0) > tmp) {
+  if (rt_roundd_snf_p((real_T)rtb_Trigger / 1000.0) > tmp) {
     Protection_DW.durationCounter_1_g++;
   } else {
     Protection_DW.durationCounter_1_g = 0U;
@@ -3493,7 +3493,7 @@ void Protection_step(void)
     rtb_Trigger = Protection_U.DataPipeline.Current_mA;
   }
 
-  if (rt_roundd_snf((real_T)rtb_Trigger / 1000.0) < tmp) {
+  if (rt_roundd_snf_p((real_T)rtb_Trigger / 1000.0) < tmp) {
     Protection_DW.durationCounter_1_j++;
   } else {
     Protection_DW.durationCounter_1_j = 0U;

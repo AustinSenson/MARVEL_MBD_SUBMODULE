@@ -73,8 +73,8 @@ Verification pane for ERT based targets, which will disable the \
 preprocessor word size checks.
 #endif
 
-extern void mul_wide_s32(int32_T in0, int32_T in1, uint32_T *ptrOutBitsHi,
+extern void mul_wide_s32_cc(int32_T in0, int32_T in1, uint32_T *ptrOutBitsHi,
   uint32_T *ptrOutBitsLo);
-extern int32_T mul_s32_sat(int32_T a, int32_T b);
+extern int32_T mul_s32_sat_cc(int32_T a, int32_T b);
 
 #endif                                 /* RTW_HEADER_SOCEstimation_private_h_ */

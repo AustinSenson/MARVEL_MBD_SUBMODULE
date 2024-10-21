@@ -69,7 +69,7 @@ const CellBalancingOutputBus CellBalancing_rtZCellBalancingO = { 0,/* MaxImbalan
   Terminate                            /* CurrentBalancingState */
 };
 
-real_T rt_roundd_snf(real_T u)
+real_T rt_roundd_snf_cb(real_T u)
 {
   real_T y;
   if (fabs(u) < 4.503599627370496E+15) {
@@ -258,7 +258,7 @@ void CellBalancing_step(void)
   } else if (CellBalancing_DW.is_c6_CellBalancing ==
              IN_BalancingTimeOn_BasedOnTemp_) {
     real_T tmp;
-    tmp = rt_roundd_snf((real_T)CellBalancing_U.StLineEq_varA *
+    tmp = rt_roundd_snf_cb((real_T)CellBalancing_U.StLineEq_varA *
                         CellBalancing_DW.x);
     if (tmp < 2.147483648E+9) {
       if (tmp >= -2.147483648E+9) {
@@ -285,7 +285,7 @@ void CellBalancing_step(void)
       CellBalancing_DW.durationCounter_1 = 0U;
     }
 
-    if ((real_T)(uint32_T)((int32_T)CellBalancing_DW.durationCounter_1 * 100) >
+    if ((real_T)(uint32_T)((int32_T)CellBalancing_DW.durationCounter_1 * CellBalancing_U.looptimeCellBalancing) >
         CellBalancing_U.Thresholds.BalancingCurrentDerateCheckTime_msec) {
       CellBalancing_DW.is_c6_CellBalancing = IN_BalancingTimeOn_BasedOnTemp_;
       CellBalancing_DW.x =
@@ -391,7 +391,7 @@ void CellBalancing_step(void)
         CellBalancing_DW.durationCounter_1_c = 0U;
       }
 
-      if ((real_T)(uint32_T)((int32_T)CellBalancing_DW.durationCounter_1_c * 100)
+      if ((real_T)(uint32_T)((int32_T)CellBalancing_DW.durationCounter_1_c * CellBalancing_U.looptimeCellBalancing)
           > CellBalancing_U.Thresholds.Balancing_StateRestPeriod_msec) {
         CellBalancing_DW.durationCounter_1_k = 0U;
         CellBalancing_DW.is_c3_CellBalancing = CellBalancing_IN_Terminate;
@@ -482,7 +482,7 @@ void CellBalancing_step(void)
         CellBalancing_DW.durationCounter_1_k = 0U;
       }
 
-      if ((real_T)(uint32_T)((int32_T)CellBalancing_DW.durationCounter_1_k * 100)
+      if ((real_T)(uint32_T)((int32_T)CellBalancing_DW.durationCounter_1_k * CellBalancing_U.looptimeCellBalancing)
           > CellBalancing_U.Thresholds.Balancing_StateRestPeriod_msec) {
         CellBalancing_DW.durationCounter_1_c = 0U;
         CellBalancing_DW.is_c3_CellBalancing = CellBalancing_IN_Lobby;

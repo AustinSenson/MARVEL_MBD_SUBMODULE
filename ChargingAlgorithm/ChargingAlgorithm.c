@@ -87,7 +87,7 @@ void MultiWordSignedWrap(const uint32_T u1[], int32_T n1, uint32_T n2, uint32_T
   y[n1 - 1] = (u1[n1 - 1] & mask) | (~mask & ys);
 }
 
-void sMultiWordMul(const uint32_T u1[], int32_T n1, const uint32_T u2[], int32_T
+void sMultiWordMul_chg(const uint32_T u1[], int32_T n1, const uint32_T u2[], int32_T
                    n2, uint32_T y[], int32_T n)
 {
   int32_T i;
@@ -176,10 +176,10 @@ void sMultiWordMul(const uint32_T u1[], int32_T n1, const uint32_T u2[], int32_T
 
 boolean_T sMultiWordGt(const uint32_T u1[], const uint32_T u2[], int32_T n)
 {
-  return sMultiWordCmp(u1, u2, n) > 0;
+  return sMultiWordCmp_chg(u1, u2, n) > 0;
 }
 
-int32_T sMultiWordCmp(const uint32_T u1[], const uint32_T u2[], int32_T n)
+int32_T sMultiWordCmp_chg(const uint32_T u1[], const uint32_T u2[], int32_T n)
 {
   int32_T y;
   uint32_T su1;
@@ -206,10 +206,10 @@ int32_T sMultiWordCmp(const uint32_T u1[], const uint32_T u2[], int32_T n)
 
 boolean_T sMultiWordLt(const uint32_T u1[], const uint32_T u2[], int32_T n)
 {
-  return sMultiWordCmp(u1, u2, n) < 0;
+  return sMultiWordCmp_chg(u1, u2, n) < 0;
 }
 
-real32_T sMultiWord2Single(const uint32_T u1[], int32_T n1, int32_T e1)
+real32_T sMultiWord2Single_chg(const uint32_T u1[], int32_T n1, int32_T e1)
 {
   int32_T exp_0;
   int32_T i;
@@ -324,7 +324,7 @@ void uMultiWordMul(const uint32_T u1[], int32_T n1, const uint32_T u2[], int32_T
   }
 }
 
-real_T rt_roundd_snf(real_T u)
+real_T rt_roundd_snf_chg(real_T u)
 {
   real_T y;
   if (fabs(u) < 4.503599627370496E+15) {
@@ -442,7 +442,7 @@ void ChargingAlgorithm_step(void)
         ChargingAlgorithm_DW.durationCounter_2_p = 0U;
       }
 
-      if ((uint32_T)((int32_T)ChargingAlgorithm_DW.durationCounter_2_p * 100) >=
+      if ((uint32_T)((int32_T)ChargingAlgorithm_DW.durationCounter_2_p * ChargingAlgorithm_U.looptimeCharging) >=
           ChargingAlgorithm_U.Thresholds.ChargeAlgorithm.TransitionTimeout_msec)
       {
         ChargingAlgorithm_DW.is_FastCharging = ChargingAlgo_IN_NO_ACTIVE_CHILD;
@@ -458,7 +458,7 @@ void ChargingAlgorithm_step(void)
           ChargingAlgorithm_DW.durationCounter_1_h = 0U;
         }
 
-        if ((uint32_T)((int32_T)ChargingAlgorithm_DW.durationCounter_1_h * 100) >=
+        if ((uint32_T)((int32_T)ChargingAlgorithm_DW.durationCounter_1_h * ChargingAlgorithm_U.looptimeCharging) >=
             ChargingAlgorithm_U.Thresholds.ChargeAlgorithm.TransitionTimeout_msec)
         {
           ChargingAlgorithm_DW.is_FastCharging = ChargingAlgo_IN_NO_ACTIVE_CHILD;
@@ -479,7 +479,7 @@ void ChargingAlgorithm_step(void)
             ChargingAlgorithm_DW.durationCounter_1 = 0U;
           }
 
-          if ((uint32_T)((int32_T)ChargingAlgorithm_DW.durationCounter_1 * 100) >=
+          if ((uint32_T)((int32_T)ChargingAlgorithm_DW.durationCounter_1 * ChargingAlgorithm_U.looptimeCharging) >=
               ChargingAlgorithm_U.Thresholds.ChargeAlgorithm.TransitionTimeout_msec)
           {
             ChargingAlgorithm_DW.is_FastCharging =
@@ -491,7 +491,7 @@ void ChargingAlgorithm_step(void)
           } else if (ChargingAlgorithm_DW.is_FastCharging ==
                      ChargingAlgorithm_IN_CC) {
             if (ChargingAlgorithm_U.DataPipeline.VoltageSenseBus.mV_max >=
-                (uint16_T)(int32_T)rt_roundd_snf((real_T)
+                (uint16_T)(int32_T)rt_roundd_snf_chg((real_T)
                  ChargingAlgorithm_U.Thresholds.transitionVoltageCV - 0.1)) {
               ChargingAlgorithm_DW.is_FastCharging = ChargingAlgorithm_IN_CV;
             } else {
@@ -511,7 +511,7 @@ void ChargingAlgorithm_step(void)
             ChargingAlgorithm_DW.durationCounter_1_n = 0U;
           }
 
-          if ((uint32_T)((int32_T)ChargingAlgorithm_DW.durationCounter_1_n * 100)
+          if ((uint32_T)((int32_T)ChargingAlgorithm_DW.durationCounter_1_n * ChargingAlgorithm_U.looptimeCharging)
               >=
               ChargingAlgorithm_U.Thresholds.ChargeAlgorithm.TransitionTimeout_msec)
           {
@@ -524,7 +524,7 @@ void ChargingAlgorithm_step(void)
           } else if (ChargingAlgorithm_DW.is_SlowCharging ==
                      ChargingAlgorithm_IN_CC) {
             if (ChargingAlgorithm_U.DataPipeline.VoltageSenseBus.mV_max >=
-                (uint16_T)(int32_T)rt_roundd_snf((real_T)
+                (uint16_T)(int32_T)rt_roundd_snf_chg((real_T)
                  ChargingAlgorithm_U.Thresholds.transitionVoltageCV - 0.1)) {
               ChargingAlgorithm_DW.is_SlowCharging = ChargingAlgorithm_IN_CV;
             } else {
@@ -546,7 +546,7 @@ void ChargingAlgorithm_step(void)
         ChargingAlgorithm_DW.durationCounter_1_l = 0U;
       }
 
-      if ((uint32_T)((int32_T)ChargingAlgorithm_DW.durationCounter_1_l * 100) >=
+      if ((uint32_T)((int32_T)ChargingAlgorithm_DW.durationCounter_1_l * ChargingAlgorithm_U.looptimeCharging) >=
           ChargingAlgorithm_U.Thresholds.ChargeAlgorithm.TransitionTimeout_msec)
       {
         ChargingAlgorithm_DW.is_TrickleCharging =
@@ -567,7 +567,7 @@ void ChargingAlgorithm_step(void)
             ChargingAlgorithm_DW.durationCounter_2 = 0U;
           }
 
-          if ((uint32_T)((int32_T)ChargingAlgorithm_DW.durationCounter_2 * 100) >=
+          if ((uint32_T)((int32_T)ChargingAlgorithm_DW.durationCounter_2 * ChargingAlgorithm_U.looptimeCharging) >=
               ChargingAlgorithm_U.Thresholds.ChargeAlgorithm.TransitionTimeout_msec)
           {
             ChargingAlgorithm_DW.is_TrickleCharging =
@@ -633,7 +633,7 @@ void ChargingAlgorithm_step(void)
         ChargingAlgorithm_DW.durationCounter_1_c = 0U;
       }
 
-      if ((uint32_T)((int32_T)ChargingAlgorithm_DW.durationCounter_1_c * 100) >=
+      if ((uint32_T)((int32_T)ChargingAlgorithm_DW.durationCounter_1_c * ChargingAlgorithm_U.looptimeCharging) >=
           ChargingAlgorithm_U.Thresholds.ChargeAlgorithm.TransitionTimeout_msec)
       {
         ChargingAlgorithm_DW.durationCounter_1_l = 0U;
@@ -740,7 +740,7 @@ void ChargingAlgorithm_step(void)
      */
     tmp_1 = (uint32_T)(int32_T)floor((real_T)(tmp_4 - tmp_5) *
       ChargingAlgorithm_B.Constant_K);
-    sMultiWordMul(&tmp_0, 1, &tmp_1, 1, &tmp.chunks[0U], 2);
+    sMultiWordMul_chg(&tmp_0, 1, &tmp_1, 1, &tmp.chunks[0U], 2);
     MultiWordSignedWrap(&tmp.chunks[0U], 2, 16U, &rtb_Saturation.chunks[0U]);
 
     /* Saturate: '<S1>/Saturation' */
@@ -776,7 +776,7 @@ void ChargingAlgorithm_step(void)
      *  Inport: '<Root>/DataPipeline'
      *  MinMax: '<S1>/Min'
      */
-    ChargingAlgorithm_Y.RequestedCurrent_mA = fminf(fminf(sMultiWord2Single
+    ChargingAlgorithm_Y.RequestedCurrent_mA = fminf(fminf(sMultiWord2Single_chg
       (&rtb_Saturation.chunks[0U], 2, 0), 1000.0F *
       ChargingAlgorithm_U.DataPipeline.DCL_ChargingCurrent_A), uMultiWordSingle(
       &tmp_2.chunks[0U], 2, 0));
