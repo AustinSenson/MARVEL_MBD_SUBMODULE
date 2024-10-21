@@ -7,9 +7,9 @@
  *
  * Code generation for model "ChargingAlgorithm".
  *
- * Model version              : 4.0
+ * Model version              : 4.4
  * Simulink Coder version : 9.8 (R2022b) 13-May-2022
- * C source code generated on : Mon Oct  7 18:54:16 2024
+ * C source code generated on : Mon Oct 14 20:47:21 2024
  *
  * Target selection: grt.tlc
  * Note: GRT includes extra infrastructure and instrumentation for prototyping
@@ -26,15 +26,10 @@
 #include "ChargingAlgorithm_types.h"
 #include <string.h>
 
-/* Named constants for Chart: '<S1>/ChargingAlgorithmstep1' */
-#define ChargingAlgo_IN_NO_ACTIVE_CHILD ((uint8_T)0U)
-#define ChargingAlgorithm_IN_FastCharge ((uint8_T)1U)
-#define ChargingAlgorithm_IN_NoCharge  ((uint8_T)2U)
-#define ChargingAlgorithm_IN_SlowCharge ((uint8_T)3U)
-
-/* Named constants for Chart: '<S1>/ChargingAlgorithmstep2' */
+/* Named constants for Chart: '<S1>/ChargingAlgorithmProcessing' */
 #define Chargi_IN_TrickleChargeDisabled ((uint8_T)1U)
 #define Chargin_IN_TrickleChargeEnabled ((uint8_T)2U)
+#define ChargingAlgo_IN_NO_ACTIVE_CHILD ((uint8_T)0U)
 #define ChargingAlgo_IN_TrickleCharging ((uint8_T)2U)
 #define ChargingAlgor_IN_NormalCharging ((uint8_T)1U)
 #define ChargingAlgori_IN_chargingLobby ((uint8_T)3U)
@@ -42,6 +37,21 @@
 #define ChargingAlgorit_IN_SlowCharging ((uint8_T)2U)
 #define ChargingAlgorithm_IN_CC        ((uint8_T)1U)
 #define ChargingAlgorithm_IN_CV        ((uint8_T)2U)
+
+/* Named constants for Chart: '<S1>/ChargingStateMachine' */
+#define ChargingAlgorithm_IN_FastCharge ((uint8_T)1U)
+#define ChargingAlgorithm_IN_IRCalc    ((uint8_T)2U)
+#define ChargingAlgorithm_IN_NoCharge  ((uint8_T)3U)
+#define ChargingAlgorithm_IN_SlowCharge ((uint8_T)4U)
+
+/* Named constants for Chart: '<S1>/IRCalculation' */
+#define ChargingAlgori_IN_IRCalculation ((uint8_T)2U)
+#define ChargingAlgorith_IN_IRCalcBegin ((uint8_T)3U)
+#define ChargingAlgorithm_IN_DropPulse ((uint8_T)1U)
+#define ChargingAlgorithm_IN_DropSense ((uint8_T)2U)
+#define ChargingAlgorithm_IN_Entry     ((uint8_T)1U)
+#define ChargingAlgorithm_IN_IRLobby   ((uint8_T)3U)
+#define ChargingAlgorithm_IN_UpSense   ((uint8_T)4U)
 
 /* Block signals (default storage) */
 B_ChargingAlgorithm_T ChargingAlgorithm_B;
@@ -66,7 +76,7 @@ const CC_OutputsBus ChargingAlgorithm_rtZCC_Outputs = { 0,/* Initial_Capacity_mA
   0,                                   /* MaxUsableCapacity_mAh */
   0,                                   /* TotalCapacityExchange_mAh */
   0,                                   /* SOH_cpct */
-  0.0F                                 /* CycleCount */
+  0.0F                                 /* cycleCount */
 };
 
 void MultiWordSignedWrap(const uint32_T u1[], int32_T n1, uint32_T n2, uint32_T
@@ -324,24 +334,6 @@ void uMultiWordMul(const uint32_T u1[], int32_T n1, const uint32_T u2[], int32_T
   }
 }
 
-real_T rt_roundd_snf(real_T u)
-{
-  real_T y;
-  if (fabs(u) < 4.503599627370496E+15) {
-    if (u >= 0.5) {
-      y = floor(u + 0.5);
-    } else if (u > -0.5) {
-      y = u * 0.0;
-    } else {
-      y = ceil(u - 0.5);
-    }
-  } else {
-    y = u;
-  }
-
-  return y;
-}
-
 /* Model step function */
 void ChargingAlgorithm_step(void)
 {
@@ -351,37 +343,73 @@ void ChargingAlgorithm_step(void)
   uint64m_T tmp_3;
   uint32_T tmp_0;
   uint32_T tmp_1;
-  boolean_T tmp_6;
 
-  /* Chart: '<S1>/ChargingAlgorithmstep1' incorporates:
+  /* Chart: '<S1>/ChargingStateMachine' incorporates:
+   *  DataStoreRead: '<S1>/Data Store Read'
    *  Inport: '<Root>/CC_Outputs'
    *  Inport: '<Root>/DataPipeline'
+   *  Inport: '<Root>/IR_calcEnable'
+   *  Inport: '<Root>/Thresholds'
    */
   if (ChargingAlgorithm_DW.is_active_c34_ChargingAlgorithm == 0U) {
     ChargingAlgorithm_DW.is_active_c34_ChargingAlgorithm = 1U;
     ChargingAlgorithm_DW.is_c34_ChargingAlgorithm =
       ChargingAlgorithm_IN_NoCharge;
+    ChargingAlgorithm_DW.IRSlowGuard = false;
+    ChargingAlgorithm_DW.IRFastGuard = false;
     ChargingAlgorithm_Y.ChargingState = NoCharging;
-    ChargingAlgorithm_B.IRComplete = false;
   } else {
     switch (ChargingAlgorithm_DW.is_c34_ChargingAlgorithm) {
      case ChargingAlgorithm_IN_FastCharge:
-      ChargingAlgorithm_Y.ChargingState = FastCharging;
-      tmp_6 = !ChargingAlgorithm_U.DataPipeline.VCU.FastCharge;
-      if ((!ChargingAlgorithm_U.DataPipeline.VCU.isChargerConnected) ||
-          ((!ChargingAlgorithm_U.DataPipeline.VCU.SlowCharge) && tmp_6)) {
-        ChargingAlgorithm_DW.is_c34_ChargingAlgorithm =
-          ChargingAlgorithm_IN_NoCharge;
-        ChargingAlgorithm_Y.ChargingState = NoCharging;
-        ChargingAlgorithm_B.IRComplete = false;
-      } else if (ChargingAlgorithm_U.DataPipeline.VCU.SlowCharge && tmp_6) {
+      {
+        boolean_T tmp_6;
+        ChargingAlgorithm_Y.ChargingState = FastCharging;
+        tmp_6 = !ChargingAlgorithm_U.DataPipeline.VCU.FastCharge;
+        if ((!ChargingAlgorithm_U.DataPipeline.VCU.isChargerConnected) ||
+            ((!ChargingAlgorithm_U.DataPipeline.VCU.SlowCharge) && tmp_6)) {
+          ChargingAlgorithm_DW.is_c34_ChargingAlgorithm =
+            ChargingAlgorithm_IN_NoCharge;
+          ChargingAlgorithm_DW.IRSlowGuard = false;
+          ChargingAlgorithm_DW.IRFastGuard = false;
+          ChargingAlgorithm_Y.ChargingState = NoCharging;
+        } else if ((ChargingAlgorithm_U.CC_Outputs.SOC_cpct >=
+                    ChargingAlgorithm_U.Thresholds.iR_startSOC_cpct) &&
+                   (ChargingAlgorithm_U.CC_Outputs.SOC_cpct <
+                    ChargingAlgorithm_U.Thresholds.iR_startSOC_cpct + 1.0) &&
+                   (ChargingAlgorithm_U.DataPipeline.RecordedCycleCount >=
+                    ChargingAlgorithm_U.Thresholds.IRCycleCount) &&
+                   ChargingAlgorithm_DW.IRFastGuard &&
+                   (!ChargingAlgorithm_DW.IR_COMPLETE) &&
+                   (ChargingAlgorithm_U.IR_calcEnable != 0.0)) {
+          ChargingAlgorithm_DW.is_c34_ChargingAlgorithm =
+            ChargingAlgorithm_IN_IRCalc;
+          ChargingAlgorithm_Y.ChargingState = IR_Measurement;
+        } else if (ChargingAlgorithm_U.DataPipeline.VCU.SlowCharge && tmp_6) {
+          ChargingAlgorithm_DW.is_c34_ChargingAlgorithm =
+            ChargingAlgorithm_IN_SlowCharge;
+          ChargingAlgorithm_Y.ChargingState = SlowCharging;
+        } else {
+          ChargingAlgorithm_DW.IRFastGuard =
+            ((ChargingAlgorithm_U.CC_Outputs.SOC_cpct <=
+              ChargingAlgorithm_U.Thresholds.iR_chargingWait_SOCcpct) ||
+             ChargingAlgorithm_DW.IRFastGuard);
+        }
+      }
+      break;
+
+     case ChargingAlgorithm_IN_IRCalc:
+      ChargingAlgorithm_Y.ChargingState = IR_Measurement;
+      if (ChargingAlgorithm_DW.IR_COMPLETE) {
+        ChargingAlgorithm_DW.IRSlowGuard = false;
         ChargingAlgorithm_DW.is_c34_ChargingAlgorithm =
           ChargingAlgorithm_IN_SlowCharge;
         ChargingAlgorithm_Y.ChargingState = SlowCharging;
-      } else {
-        ChargingAlgorithm_B.IRComplete =
-          ((ChargingAlgorithm_U.CC_Outputs.SOC_cpct > 45) &&
-           ChargingAlgorithm_B.IRComplete);
+      } else if (!ChargingAlgorithm_U.DataPipeline.VCU.isChargerConnected) {
+        ChargingAlgorithm_DW.is_c34_ChargingAlgorithm =
+          ChargingAlgorithm_IN_NoCharge;
+        ChargingAlgorithm_DW.IRSlowGuard = false;
+        ChargingAlgorithm_DW.IRFastGuard = false;
+        ChargingAlgorithm_Y.ChargingState = NoCharging;
       }
       break;
 
@@ -401,31 +429,49 @@ void ChargingAlgorithm_step(void)
       break;
 
      default:
-      /* case IN_SlowCharge: */
-      ChargingAlgorithm_Y.ChargingState = SlowCharging;
-      tmp_6 = !ChargingAlgorithm_U.DataPipeline.VCU.SlowCharge;
-      if ((!ChargingAlgorithm_U.DataPipeline.VCU.isChargerConnected) || (tmp_6 &&
-           (!ChargingAlgorithm_U.DataPipeline.VCU.FastCharge))) {
-        ChargingAlgorithm_DW.is_c34_ChargingAlgorithm =
-          ChargingAlgorithm_IN_NoCharge;
-        ChargingAlgorithm_Y.ChargingState = NoCharging;
-        ChargingAlgorithm_B.IRComplete = false;
-      } else if (ChargingAlgorithm_U.DataPipeline.VCU.FastCharge && tmp_6) {
-        ChargingAlgorithm_DW.is_c34_ChargingAlgorithm =
-          ChargingAlgorithm_IN_FastCharge;
-        ChargingAlgorithm_Y.ChargingState = FastCharging;
-      } else {
-        ChargingAlgorithm_B.IRComplete =
-          ((ChargingAlgorithm_U.CC_Outputs.SOC_cpct > 45) &&
-           ChargingAlgorithm_B.IRComplete);
+      {
+        boolean_T tmp_6;
+
+        /* case IN_SlowCharge: */
+        ChargingAlgorithm_Y.ChargingState = SlowCharging;
+        tmp_6 = !ChargingAlgorithm_U.DataPipeline.VCU.SlowCharge;
+        if ((!ChargingAlgorithm_U.DataPipeline.VCU.isChargerConnected) || (tmp_6
+             && (!ChargingAlgorithm_U.DataPipeline.VCU.FastCharge))) {
+          ChargingAlgorithm_DW.is_c34_ChargingAlgorithm =
+            ChargingAlgorithm_IN_NoCharge;
+          ChargingAlgorithm_DW.IRSlowGuard = false;
+          ChargingAlgorithm_DW.IRFastGuard = false;
+          ChargingAlgorithm_Y.ChargingState = NoCharging;
+        } else if (ChargingAlgorithm_U.DataPipeline.VCU.FastCharge && tmp_6) {
+          ChargingAlgorithm_DW.is_c34_ChargingAlgorithm =
+            ChargingAlgorithm_IN_FastCharge;
+          ChargingAlgorithm_Y.ChargingState = FastCharging;
+        } else if ((ChargingAlgorithm_U.CC_Outputs.SOC_cpct >=
+                    ChargingAlgorithm_U.Thresholds.iR_startSOC_cpct) &&
+                   (ChargingAlgorithm_U.CC_Outputs.SOC_cpct <
+                    ChargingAlgorithm_U.Thresholds.iR_startSOC_cpct + 1.0) &&
+                   (ChargingAlgorithm_U.DataPipeline.RecordedCycleCount >=
+                    ChargingAlgorithm_U.Thresholds.IRCycleCount) &&
+                   ChargingAlgorithm_DW.IRSlowGuard &&
+                   (!ChargingAlgorithm_DW.IR_COMPLETE) &&
+                   (ChargingAlgorithm_U.IR_calcEnable != 0.0)) {
+          ChargingAlgorithm_DW.is_c34_ChargingAlgorithm =
+            ChargingAlgorithm_IN_IRCalc;
+          ChargingAlgorithm_Y.ChargingState = IR_Measurement;
+        } else {
+          ChargingAlgorithm_DW.IRSlowGuard =
+            ((ChargingAlgorithm_U.CC_Outputs.SOC_cpct <=
+              ChargingAlgorithm_U.Thresholds.iR_chargingWait_SOCcpct) ||
+             ChargingAlgorithm_DW.IRSlowGuard);
+        }
       }
       break;
     }
   }
 
-  /* End of Chart: '<S1>/ChargingAlgorithmstep1' */
+  /* End of Chart: '<S1>/ChargingStateMachine' */
 
-  /* Chart: '<S1>/ChargingAlgorithmstep2' incorporates:
+  /* Chart: '<S1>/ChargingAlgorithmProcessing' incorporates:
    *  Inport: '<Root>/DataPipeline'
    *  Inport: '<Root>/Thresholds'
    */
@@ -435,14 +481,15 @@ void ChargingAlgorithm_step(void)
     ChargingAlgorithm_DW.is_c32_ChargingAlgorithm =
       ChargingAlgori_IN_chargingLobby;
     ChargingAlgorithm_B.Constant_K = 0.0;
+    ChargingAlgorithm_B.trickleChargingEnabled = false;
   } else {
     switch (ChargingAlgorithm_DW.is_c32_ChargingAlgorithm) {
      case ChargingAlgor_IN_NormalCharging:
       if (ChargingAlgorithm_Y.ChargingState != NoCharging) {
-        ChargingAlgorithm_DW.durationCounter_2_p = 0U;
+        ChargingAlgorithm_DW.durationCounter_2 = 0U;
       }
 
-      if ((uint32_T)((int32_T)ChargingAlgorithm_DW.durationCounter_2_p * 100) >=
+      if ((uint32_T)((int32_T)ChargingAlgorithm_DW.durationCounter_2 * 100) >=
           ChargingAlgorithm_U.Thresholds.ChargeAlgorithm.TransitionTimeout_msec)
       {
         ChargingAlgorithm_DW.is_FastCharging = ChargingAlgo_IN_NO_ACTIVE_CHILD;
@@ -452,34 +499,35 @@ void ChargingAlgorithm_step(void)
         ChargingAlgorithm_DW.is_c32_ChargingAlgorithm =
           ChargingAlgori_IN_chargingLobby;
         ChargingAlgorithm_B.Constant_K = 0.0;
+        ChargingAlgorithm_B.trickleChargingEnabled = false;
       } else {
         if (ChargingAlgorithm_U.DataPipeline.VoltageSenseBus.mV_min >=
             ChargingAlgorithm_U.Thresholds.trickleChargingLimit) {
-          ChargingAlgorithm_DW.durationCounter_1_h = 0U;
+          ChargingAlgorithm_DW.durationCounter_1_im = 0U;
         }
 
-        if ((uint32_T)((int32_T)ChargingAlgorithm_DW.durationCounter_1_h * 100) >=
+        if ((uint32_T)((int32_T)ChargingAlgorithm_DW.durationCounter_1_im * 100)
+            >=
             ChargingAlgorithm_U.Thresholds.ChargeAlgorithm.TransitionTimeout_msec)
         {
           ChargingAlgorithm_DW.is_FastCharging = ChargingAlgo_IN_NO_ACTIVE_CHILD;
           ChargingAlgorithm_DW.is_SlowCharging = ChargingAlgo_IN_NO_ACTIVE_CHILD;
           ChargingAlgorithm_DW.is_NormalCharging =
             ChargingAlgo_IN_NO_ACTIVE_CHILD;
-          ChargingAlgorithm_DW.durationCounter_1_l = 0U;
+          ChargingAlgorithm_DW.durationCounter_1_i = 0U;
           ChargingAlgorithm_DW.is_c32_ChargingAlgorithm =
             ChargingAlgo_IN_TrickleCharging;
-          ChargingAlgorithm_DW.durationCounter_2 = 0U;
-          ChargingAlgorithm_DW.durationCounter_1_i = 0U;
           ChargingAlgorithm_DW.is_TrickleCharging =
             Chargi_IN_TrickleChargeDisabled;
         } else if (ChargingAlgorithm_DW.is_NormalCharging ==
                    ChargingAlgorit_IN_FastCharging) {
           if ((!ChargingAlgorithm_U.DataPipeline.VCU.SlowCharge) ||
               (!ChargingAlgorithm_U.DataPipeline.VCU.FastCharge)) {
-            ChargingAlgorithm_DW.durationCounter_1 = 0U;
+            ChargingAlgorithm_DW.durationCounter_1_p = 0U;
           }
 
-          if ((uint32_T)((int32_T)ChargingAlgorithm_DW.durationCounter_1 * 100) >=
+          if ((uint32_T)((int32_T)ChargingAlgorithm_DW.durationCounter_1_p * 100)
+              >=
               ChargingAlgorithm_U.Thresholds.ChargeAlgorithm.TransitionTimeout_msec)
           {
             ChargingAlgorithm_DW.is_FastCharging =
@@ -491,8 +539,7 @@ void ChargingAlgorithm_step(void)
           } else if (ChargingAlgorithm_DW.is_FastCharging ==
                      ChargingAlgorithm_IN_CC) {
             if (ChargingAlgorithm_U.DataPipeline.VoltageSenseBus.mV_max >=
-                (uint16_T)(int32_T)rt_roundd_snf((real_T)
-                 ChargingAlgorithm_U.Thresholds.transitionVoltageCV - 0.1)) {
+                ChargingAlgorithm_U.Thresholds.transitionVoltageCV) {
               ChargingAlgorithm_DW.is_FastCharging = ChargingAlgorithm_IN_CV;
             } else {
               ChargingAlgorithm_B.Constant_K =
@@ -517,15 +564,14 @@ void ChargingAlgorithm_step(void)
           {
             ChargingAlgorithm_DW.is_SlowCharging =
               ChargingAlgo_IN_NO_ACTIVE_CHILD;
-            ChargingAlgorithm_DW.durationCounter_1 = 0U;
+            ChargingAlgorithm_DW.durationCounter_1_p = 0U;
             ChargingAlgorithm_DW.is_NormalCharging =
               ChargingAlgorit_IN_FastCharging;
             ChargingAlgorithm_DW.is_FastCharging = ChargingAlgorithm_IN_CC;
           } else if (ChargingAlgorithm_DW.is_SlowCharging ==
                      ChargingAlgorithm_IN_CC) {
             if (ChargingAlgorithm_U.DataPipeline.VoltageSenseBus.mV_max >=
-                (uint16_T)(int32_T)rt_roundd_snf((real_T)
-                 ChargingAlgorithm_U.Thresholds.transitionVoltageCV - 0.1)) {
+                ChargingAlgorithm_U.Thresholds.transitionVoltageCV) {
               ChargingAlgorithm_DW.is_SlowCharging = ChargingAlgorithm_IN_CV;
             } else {
               ChargingAlgorithm_B.Constant_K =
@@ -543,10 +589,10 @@ void ChargingAlgorithm_step(void)
 
      case ChargingAlgo_IN_TrickleCharging:
       if (ChargingAlgorithm_Y.ChargingState != NoCharging) {
-        ChargingAlgorithm_DW.durationCounter_1_l = 0U;
+        ChargingAlgorithm_DW.durationCounter_1_i = 0U;
       }
 
-      if ((uint32_T)((int32_T)ChargingAlgorithm_DW.durationCounter_1_l * 100) >=
+      if ((uint32_T)((int32_T)ChargingAlgorithm_DW.durationCounter_1_i * 100) >=
           ChargingAlgorithm_U.Thresholds.ChargeAlgorithm.TransitionTimeout_msec)
       {
         ChargingAlgorithm_DW.is_TrickleCharging =
@@ -555,75 +601,52 @@ void ChargingAlgorithm_step(void)
         ChargingAlgorithm_DW.is_c32_ChargingAlgorithm =
           ChargingAlgori_IN_chargingLobby;
         ChargingAlgorithm_B.Constant_K = 0.0;
+        ChargingAlgorithm_B.trickleChargingEnabled = false;
       } else if (ChargingAlgorithm_DW.is_TrickleCharging ==
                  Chargi_IN_TrickleChargeDisabled) {
         if (ChargingAlgorithm_U.DataPipeline.VoltageSenseBus.mV_min <=
             ChargingAlgorithm_U.Thresholds.trickleChargingLimit) {
           ChargingAlgorithm_DW.is_TrickleCharging =
             Chargin_IN_TrickleChargeEnabled;
+        } else if ((ChargingAlgorithm_Y.ChargingState == FastCharging) &&
+                   (!ChargingAlgorithm_B.trickleChargingEnabled)) {
+          ChargingAlgorithm_B.Constant_K =
+            ChargingAlgorithm_U.Thresholds.FastCharge_CC_K;
+          ChargingAlgorithm_DW.is_TrickleCharging =
+            ChargingAlgo_IN_NO_ACTIVE_CHILD;
+          ChargingAlgorithm_DW.durationCounter_2 = 0U;
+          ChargingAlgorithm_DW.durationCounter_1_im = 0U;
+          ChargingAlgorithm_DW.is_c32_ChargingAlgorithm =
+            ChargingAlgor_IN_NormalCharging;
+          ChargingAlgorithm_DW.durationCounter_1_p = 0U;
+          ChargingAlgorithm_DW.is_NormalCharging =
+            ChargingAlgorit_IN_FastCharging;
+          ChargingAlgorithm_DW.is_FastCharging = ChargingAlgorithm_IN_CC;
+        } else if ((ChargingAlgorithm_Y.ChargingState == SlowCharging) &&
+                   (!ChargingAlgorithm_B.trickleChargingEnabled)) {
+          ChargingAlgorithm_B.Constant_K =
+            ChargingAlgorithm_U.Thresholds.SlowCharge_CC_K;
+          ChargingAlgorithm_DW.is_TrickleCharging =
+            ChargingAlgo_IN_NO_ACTIVE_CHILD;
+          ChargingAlgorithm_DW.durationCounter_2 = 0U;
+          ChargingAlgorithm_DW.durationCounter_1_im = 0U;
+          ChargingAlgorithm_DW.is_c32_ChargingAlgorithm =
+            ChargingAlgor_IN_NormalCharging;
+          ChargingAlgorithm_DW.durationCounter_1_n = 0U;
+          ChargingAlgorithm_DW.is_NormalCharging =
+            ChargingAlgorit_IN_SlowCharging;
+          ChargingAlgorithm_DW.is_SlowCharging = ChargingAlgorithm_IN_CC;
         } else {
-          if ((ChargingAlgorithm_Y.ChargingState != FastCharging) ||
-              ChargingAlgorithm_B.trickleChargingEnabled) {
-            ChargingAlgorithm_DW.durationCounter_2 = 0U;
-          }
-
-          if ((uint32_T)((int32_T)ChargingAlgorithm_DW.durationCounter_2 * 100) >=
-              ChargingAlgorithm_U.Thresholds.ChargeAlgorithm.TransitionTimeout_msec)
-          {
-            ChargingAlgorithm_DW.is_TrickleCharging =
-              ChargingAlgo_IN_NO_ACTIVE_CHILD;
-            ChargingAlgorithm_DW.durationCounter_2_p = 0U;
-            ChargingAlgorithm_DW.durationCounter_1_h = 0U;
-            ChargingAlgorithm_DW.is_c32_ChargingAlgorithm =
-              ChargingAlgor_IN_NormalCharging;
-            ChargingAlgorithm_DW.durationCounter_1 = 0U;
-            ChargingAlgorithm_DW.is_NormalCharging =
-              ChargingAlgorit_IN_FastCharging;
-            ChargingAlgorithm_DW.is_FastCharging = ChargingAlgorithm_IN_CC;
-          } else {
-            if ((ChargingAlgorithm_Y.ChargingState != SlowCharging) ||
-                ChargingAlgorithm_B.trickleChargingEnabled) {
-              ChargingAlgorithm_DW.durationCounter_1_i = 0U;
-            }
-
-            if ((uint32_T)((int32_T)ChargingAlgorithm_DW.durationCounter_1_i *
-                           100) >=
-                ChargingAlgorithm_U.Thresholds.ChargeAlgorithm.TransitionTimeout_msec)
-            {
-              ChargingAlgorithm_DW.is_TrickleCharging =
-                ChargingAlgo_IN_NO_ACTIVE_CHILD;
-              ChargingAlgorithm_DW.durationCounter_2_p = 0U;
-              ChargingAlgorithm_DW.durationCounter_1_h = 0U;
-              ChargingAlgorithm_DW.is_c32_ChargingAlgorithm =
-                ChargingAlgor_IN_NormalCharging;
-              ChargingAlgorithm_DW.durationCounter_1_n = 0U;
-              ChargingAlgorithm_DW.is_NormalCharging =
-                ChargingAlgorit_IN_SlowCharging;
-              ChargingAlgorithm_DW.is_SlowCharging = ChargingAlgorithm_IN_CC;
-            } else {
-              ChargingAlgorithm_B.trickleChargingEnabled = false;
-              if (ChargingAlgorithm_Y.ChargingState != SlowCharging) {
-                ChargingAlgorithm_DW.durationCounter_1_i = 0U;
-              }
-
-              if (ChargingAlgorithm_Y.ChargingState != FastCharging) {
-                ChargingAlgorithm_DW.durationCounter_2 = 0U;
-              }
-            }
-          }
+          ChargingAlgorithm_B.trickleChargingEnabled = false;
         }
 
         /* case IN_TrickleChargeEnabled: */
       } else if (ChargingAlgorithm_U.DataPipeline.VoltageSenseBus.mV_min >
                  ChargingAlgorithm_U.Thresholds.trickleChargingLimit) {
-        ChargingAlgorithm_DW.durationCounter_2 = 0U;
-        ChargingAlgorithm_DW.durationCounter_1_i = 0U;
         ChargingAlgorithm_DW.is_TrickleCharging =
           Chargi_IN_TrickleChargeDisabled;
       } else {
         ChargingAlgorithm_B.trickleChargingEnabled = true;
-        ChargingAlgorithm_DW.durationCounter_1_i = 0U;
-        ChargingAlgorithm_DW.durationCounter_2 = 0U;
       }
       break;
 
@@ -636,11 +659,9 @@ void ChargingAlgorithm_step(void)
       if ((uint32_T)((int32_T)ChargingAlgorithm_DW.durationCounter_1_c * 100) >=
           ChargingAlgorithm_U.Thresholds.ChargeAlgorithm.TransitionTimeout_msec)
       {
-        ChargingAlgorithm_DW.durationCounter_1_l = 0U;
+        ChargingAlgorithm_DW.durationCounter_1_i = 0U;
         ChargingAlgorithm_DW.is_c32_ChargingAlgorithm =
           ChargingAlgo_IN_TrickleCharging;
-        ChargingAlgorithm_DW.durationCounter_2 = 0U;
-        ChargingAlgorithm_DW.durationCounter_1_i = 0U;
         ChargingAlgorithm_DW.is_TrickleCharging =
           Chargi_IN_TrickleChargeDisabled;
       }
@@ -650,9 +671,9 @@ void ChargingAlgorithm_step(void)
 
   if (ChargingAlgorithm_U.DataPipeline.VCU.SlowCharge &&
       ChargingAlgorithm_U.DataPipeline.VCU.FastCharge) {
-    ChargingAlgorithm_DW.durationCounter_1++;
+    ChargingAlgorithm_DW.durationCounter_1_p++;
   } else {
-    ChargingAlgorithm_DW.durationCounter_1 = 0U;
+    ChargingAlgorithm_DW.durationCounter_1_p = 0U;
   }
 
   if (ChargingAlgorithm_U.DataPipeline.VCU.FastCharge &&
@@ -664,43 +685,30 @@ void ChargingAlgorithm_step(void)
 
   if (ChargingAlgorithm_Y.ChargingState != NoCharging) {
     ChargingAlgorithm_DW.durationCounter_1_c++;
+    ChargingAlgorithm_DW.durationCounter_1_i = 0U;
   } else {
     ChargingAlgorithm_DW.durationCounter_1_c = 0U;
-  }
-
-  tmp_6 = !ChargingAlgorithm_B.trickleChargingEnabled;
-  if ((ChargingAlgorithm_Y.ChargingState == SlowCharging) && tmp_6) {
     ChargingAlgorithm_DW.durationCounter_1_i++;
-  } else {
-    ChargingAlgorithm_DW.durationCounter_1_i = 0U;
   }
 
-  if ((ChargingAlgorithm_Y.ChargingState == FastCharging) && tmp_6) {
+  if (ChargingAlgorithm_U.DataPipeline.VoltageSenseBus.mV_min <
+      ChargingAlgorithm_U.Thresholds.trickleChargingLimit) {
+    ChargingAlgorithm_DW.durationCounter_1_im++;
+  } else {
+    ChargingAlgorithm_DW.durationCounter_1_im = 0U;
+  }
+
+  if (ChargingAlgorithm_Y.ChargingState == NoCharging) {
     ChargingAlgorithm_DW.durationCounter_2++;
   } else {
     ChargingAlgorithm_DW.durationCounter_2 = 0U;
   }
 
-  if (ChargingAlgorithm_Y.ChargingState == NoCharging) {
-    ChargingAlgorithm_DW.durationCounter_1_l++;
-    ChargingAlgorithm_DW.durationCounter_2_p++;
-  } else {
-    ChargingAlgorithm_DW.durationCounter_1_l = 0U;
-    ChargingAlgorithm_DW.durationCounter_2_p = 0U;
-  }
-
-  if (ChargingAlgorithm_U.DataPipeline.VoltageSenseBus.mV_min <
-      ChargingAlgorithm_U.Thresholds.trickleChargingLimit) {
-    ChargingAlgorithm_DW.durationCounter_1_h++;
-  } else {
-    ChargingAlgorithm_DW.durationCounter_1_h = 0U;
-  }
-
-  /* End of Chart: '<S1>/ChargingAlgorithmstep2' */
+  /* End of Chart: '<S1>/ChargingAlgorithmProcessing' */
 
   /* Switch: '<S1>/Switch2' */
   if (ChargingAlgorithm_B.trickleChargingEnabled) {
-    /* Outport: '<Root>/RequestedCurrent_mA' incorporates:
+    /* Switch: '<S1>/Switch2' incorporates:
      *  Inport: '<Root>/Thresholds'
      */
     ChargingAlgorithm_Y.RequestedCurrent_mA =
@@ -715,8 +723,7 @@ void ChargingAlgorithm_step(void)
     /* Switch: '<S1>/Switch' incorporates:
      *  Inport: '<Root>/DataPipeline'
      *  Inport: '<Root>/Thresholds'
-     *  SignalConversion generated from: '<S1>/Bus Selector'
-     * */
+     */
     if (ChargingAlgorithm_U.DataPipeline.VCU.FastCharge) {
       tmp_4 = ChargingAlgorithm_U.Thresholds.targetVoltageFastCharging_mV;
     } else {
@@ -771,7 +778,7 @@ void ChargingAlgorithm_step(void)
     uMultiWordMul(&tmp_0, 1, &tmp_1, 1, &tmp_3.chunks[0U], 2);
     MultiWordUnsignedWrap(&tmp_3.chunks[0U], 2, 16U, &tmp_2.chunks[0U]);
 
-    /* Outport: '<Root>/RequestedCurrent_mA' incorporates:
+    /* Switch: '<S1>/Switch2' incorporates:
      *  Gain: '<S1>/Gain2'
      *  Inport: '<Root>/DataPipeline'
      *  MinMax: '<S1>/Min'
@@ -783,6 +790,152 @@ void ChargingAlgorithm_step(void)
   }
 
   /* End of Switch: '<S1>/Switch2' */
+
+  /* Chart: '<S1>/IRCalculation' incorporates:
+   *  Inport: '<Root>/DataPipeline'
+   *  Inport: '<Root>/Thresholds'
+   */
+  if (ChargingAlgorithm_DW.temporalCounter_i1 < MAX_uint32_T) {
+    ChargingAlgorithm_DW.temporalCounter_i1++;
+  }
+
+  if (ChargingAlgorithm_DW.is_active_c31_ChargingAlgorithm == 0U) {
+    ChargingAlgorithm_DW.is_active_c31_ChargingAlgorithm = 1U;
+    ChargingAlgorithm_DW.is_c31_ChargingAlgorithm = ChargingAlgorithm_IN_IRLobby;
+    ChargingAlgorithm_B.firstVolt = 0;
+    ChargingAlgorithm_B.secondVolt = 0;
+    ChargingAlgorithm_B.firstRequestedCurrent = 10;
+    ChargingAlgorithm_B.secondRequestedCurrent = 0;
+    ChargingAlgorithm_B.internalResistancePulseCurrent =
+      ChargingAlgorithm_Y.RequestedCurrent_mA;
+  } else {
+    switch (ChargingAlgorithm_DW.is_c31_ChargingAlgorithm) {
+     case ChargingAlgorithm_IN_Entry:
+      if ((!ChargingAlgorithm_U.DataPipeline.VCU.isChargerConnected) ||
+          (ChargingAlgorithm_Y.ChargingState != IR_Measurement)) {
+        ChargingAlgorithm_DW.durationCounter_1 = 0U;
+      }
+
+      if ((real_T)(uint32_T)((int32_T)ChargingAlgorithm_DW.durationCounter_1 *
+                             100) >=
+          ChargingAlgorithm_U.Thresholds.IRTransition_msec) {
+        ChargingAlgorithm_DW.durationCounter_1_f = 0U;
+        ChargingAlgorithm_DW.is_c31_ChargingAlgorithm =
+          ChargingAlgori_IN_IRCalculation;
+        ChargingAlgorithm_DW.is_IRCalculation = ChargingAlgorith_IN_IRCalcBegin;
+        ChargingAlgorithm_DW.temporalCounter_i1 = 0U;
+      }
+      break;
+
+     case ChargingAlgori_IN_IRCalculation:
+      if (ChargingAlgorithm_U.DataPipeline.VCU.isChargerConnected) {
+        ChargingAlgorithm_DW.durationCounter_1_f = 0U;
+      }
+
+      if ((real_T)(uint32_T)((int32_T)ChargingAlgorithm_DW.durationCounter_1_f *
+           100) >= ChargingAlgorithm_U.Thresholds.IRTransition_msec) {
+        ChargingAlgorithm_DW.is_IRCalculation = ChargingAlgo_IN_NO_ACTIVE_CHILD;
+        ChargingAlgorithm_DW.durationCounter_1 = 0U;
+        ChargingAlgorithm_DW.is_c31_ChargingAlgorithm =
+          ChargingAlgorithm_IN_Entry;
+      } else {
+        switch (ChargingAlgorithm_DW.is_IRCalculation) {
+         case ChargingAlgorithm_IN_DropPulse:
+          if (ChargingAlgorithm_DW.temporalCounter_i1 >=
+              ChargingAlgorithm_U.Thresholds.IRPulseDropTime_sec * 10.0F) {
+            ChargingAlgorithm_DW.is_IRCalculation =
+              ChargingAlgorithm_IN_DropSense;
+            ChargingAlgorithm_DW.temporalCounter_i1 = 0U;
+          } else {
+            ChargingAlgorithm_B.internalResistancePulseCurrent = 0.0;
+          }
+          break;
+
+         case ChargingAlgorithm_IN_DropSense:
+          if ((uint32_T)((int32_T)ChargingAlgorithm_DW.temporalCounter_i1 * 100)
+              >= ChargingAlgorithm_U.Thresholds.IRTransition_msec) {
+            ChargingAlgorithm_B.internalResistancePulseCurrent =
+              ChargingAlgorithm_Y.RequestedCurrent_mA;
+            ChargingAlgorithm_DW.is_IRCalculation = ChargingAlgorithm_IN_UpSense;
+          } else {
+            ChargingAlgorithm_B.secondVolt =
+              ChargingAlgorithm_U.DataPipeline.TerminalVoltage_mV;
+            ChargingAlgorithm_B.secondRequestedCurrent =
+              ChargingAlgorithm_U.DataPipeline.Current_mA;
+          }
+          break;
+
+         case ChargingAlgorith_IN_IRCalcBegin:
+          if ((uint32_T)((int32_T)ChargingAlgorithm_DW.temporalCounter_i1 * 100)
+              >= ChargingAlgorithm_U.Thresholds.IRTransition_msec) {
+            ChargingAlgorithm_DW.is_IRCalculation =
+              ChargingAlgorithm_IN_DropPulse;
+            ChargingAlgorithm_DW.temporalCounter_i1 = 0U;
+          } else {
+            ChargingAlgorithm_B.firstRequestedCurrent =
+              ChargingAlgorithm_U.DataPipeline.Current_mA;
+            ChargingAlgorithm_B.firstVolt =
+              ChargingAlgorithm_U.DataPipeline.TerminalVoltage_mV;
+            ChargingAlgorithm_B.internalResistancePulseCurrent =
+              ChargingAlgorithm_Y.RequestedCurrent_mA;
+          }
+          break;
+
+         default:
+          /* case IN_UpSense: */
+          ChargingAlgorithm_B.IRComplete = true;
+          break;
+        }
+      }
+      break;
+
+     default:
+      /* case IN_IRLobby: */
+      ChargingAlgorithm_DW.durationCounter_1 = 0U;
+      ChargingAlgorithm_DW.is_c31_ChargingAlgorithm = ChargingAlgorithm_IN_Entry;
+      break;
+    }
+  }
+
+  if (ChargingAlgorithm_U.DataPipeline.VCU.isChargerConnected &&
+      (ChargingAlgorithm_Y.ChargingState == IR_Measurement)) {
+    ChargingAlgorithm_DW.durationCounter_1++;
+  } else {
+    ChargingAlgorithm_DW.durationCounter_1 = 0U;
+  }
+
+  if (!ChargingAlgorithm_U.DataPipeline.VCU.isChargerConnected) {
+    ChargingAlgorithm_DW.durationCounter_1_f++;
+  } else {
+    ChargingAlgorithm_DW.durationCounter_1_f = 0U;
+  }
+
+  /* End of Chart: '<S1>/IRCalculation' */
+
+  /* DataStoreWrite: '<S1>/Data Store Write' */
+  ChargingAlgorithm_DW.IR_COMPLETE = ChargingAlgorithm_B.IRComplete;
+  ChargingAlgorithm_Y.IR_Complete  = ChargingAlgorithm_DW.IR_COMPLETE;
+
+  /* Switch: '<S1>/Switch1' */
+  if (ChargingAlgorithm_Y.ChargingState > PseudoCharging) {
+    /* Switch: '<S1>/Switch2' incorporates:
+     *  Outport: '<Root>/RequestedCurrent_mA'
+     */
+    ChargingAlgorithm_Y.RequestedCurrent_mA =
+      ChargingAlgorithm_B.internalResistancePulseCurrent;
+  }
+
+  /* End of Switch: '<S1>/Switch1' */
+
+  /* Outport: '<Root>/internalResistance' incorporates:
+   *  Product: '<S1>/Divide'
+   *  Sum: '<S1>/Subtract'
+   *  Sum: '<S1>/Subtract1'
+   */
+  ChargingAlgorithm_Y.internalResistance = (real_T)
+    (ChargingAlgorithm_B.firstVolt - ChargingAlgorithm_B.secondVolt) / (real_T)
+    (ChargingAlgorithm_B.firstRequestedCurrent -
+     ChargingAlgorithm_B.secondRequestedCurrent);
 }
 
 /* Model initialize function */
@@ -809,13 +962,17 @@ void ChargingAlgorithm_initialize(void)
   (void)memset(&ChargingAlgorithm_Y, 0, sizeof(ExtY_ChargingAlgorithm_T));
   ChargingAlgorithm_Y.ChargingState = NoCharging;
 
-  /* SystemInitialize for Chart: '<S1>/ChargingAlgorithmstep1' */
+  /* Start for DataStoreMemory: '<S1>/Data Store Memory' */
+  ChargingAlgorithm_DW.IR_COMPLETE = false;
+
+  /* SystemInitialize for Chart: '<S1>/ChargingStateMachine' */
   ChargingAlgorithm_DW.is_active_c34_ChargingAlgorithm = 0U;
   ChargingAlgorithm_DW.is_c34_ChargingAlgorithm =
     ChargingAlgo_IN_NO_ACTIVE_CHILD;
-  ChargingAlgorithm_B.IRComplete = false;
+  ChargingAlgorithm_DW.IRFastGuard = false;
+  ChargingAlgorithm_DW.IRSlowGuard = false;
 
-  /* SystemInitialize for Chart: '<S1>/ChargingAlgorithmstep2' */
+  /* SystemInitialize for Chart: '<S1>/ChargingAlgorithmProcessing' */
   ChargingAlgorithm_DW.is_NormalCharging = ChargingAlgo_IN_NO_ACTIVE_CHILD;
   ChargingAlgorithm_DW.is_FastCharging = ChargingAlgo_IN_NO_ACTIVE_CHILD;
   ChargingAlgorithm_DW.is_SlowCharging = ChargingAlgo_IN_NO_ACTIVE_CHILD;
@@ -826,6 +983,19 @@ void ChargingAlgorithm_initialize(void)
   ChargingAlgorithm_B.Constant_K = 0.0;
   ChargingAlgorithm_B.cvModeActivated = false;
   ChargingAlgorithm_B.trickleChargingEnabled = false;
+
+  /* SystemInitialize for Chart: '<S1>/IRCalculation' */
+  ChargingAlgorithm_DW.is_IRCalculation = ChargingAlgo_IN_NO_ACTIVE_CHILD;
+  ChargingAlgorithm_DW.temporalCounter_i1 = 0U;
+  ChargingAlgorithm_DW.is_active_c31_ChargingAlgorithm = 0U;
+  ChargingAlgorithm_DW.is_c31_ChargingAlgorithm =
+    ChargingAlgo_IN_NO_ACTIVE_CHILD;
+  ChargingAlgorithm_B.internalResistancePulseCurrent = 0.0;
+  ChargingAlgorithm_B.secondRequestedCurrent = 0;
+  ChargingAlgorithm_B.firstRequestedCurrent = 0;
+  ChargingAlgorithm_B.secondVolt = 0;
+  ChargingAlgorithm_B.firstVolt = 0;
+  ChargingAlgorithm_B.IRComplete = false;
 }
 
 /* Model terminate function */
