@@ -15,10 +15,14 @@
 
 /* Block signals for system '<S1>/SOC_WriteToFlash' */
 typedef struct {
-  int32_T SOC;                         /* '<S1>/SOC_WriteToFlash' */
+  real32_T A;                          /* '<S1>/SOC_WriteToFlash' */
+  real32_T XYZ;                        /* '<S1>/SOC_WriteToFlash' */
+  real32_T SOC;                        /* '<S1>/SOC_WriteToFlash' */
 } B_SOC_WriteToFlash_SOCEstimat_T;
 
-extern void SOCEstimation_SOC_WriteToFlash(int32_T rtu_SOC_cpct,
-  B_SOC_WriteToFlash_SOCEstimat_T *localB);
+extern void SOCEstimation_SOC_WriteToFlash(int32_T rtu_SOH_pct, int32_T
+  rtu_TotalCapacityExchange_mAh, int32_T rtu_MaxUsableCapacity_mAh, real32_T
+  rtu_SOC_cpct, int32_T rtu_TotalDischarge_mAh, int32_T
+  rtu_TotalCapacityRemains_mAh, B_SOC_WriteToFlash_SOCEstimat_T *localB);
 
 #endif                                 /* RTW_HEADER_SOC_WriteToFlash_h_ */
