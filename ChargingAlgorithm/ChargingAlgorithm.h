@@ -7,9 +7,9 @@
  *
  * Code generation for model "ChargingAlgorithm".
  *
- * Model version              : 4.0
+ * Model version              : 4.4
  * Simulink Coder version : 9.8 (R2022b) 13-May-2022
- * C source code generated on : Mon Oct  7 18:54:16 2024
+ * C source code generated on : Mon Oct 14 20:47:21 2024
  *
  * Target selection: grt.tlc
  * Note: GRT includes extra infrastructure and instrumentation for prototyping
@@ -44,30 +44,42 @@
 
 /* Block signals (default storage) */
 typedef struct {
-  real_T Constant_K;                   /* '<S1>/ChargingAlgorithmstep2' */
-  boolean_T cvModeActivated;           /* '<S1>/ChargingAlgorithmstep2' */
-  boolean_T trickleChargingEnabled;    /* '<S1>/ChargingAlgorithmstep2' */
-  boolean_T IRComplete;                /* '<S1>/ChargingAlgorithmstep1' */
+  real_T internalResistancePulseCurrent;/* '<S1>/IRCalculation' */
+  real_T Constant_K;                   /* '<S1>/ChargingAlgorithmProcessing' */
+  int32_T secondRequestedCurrent;      /* '<S1>/IRCalculation' */
+  int32_T firstRequestedCurrent;       /* '<S1>/IRCalculation' */
+  int32_T secondVolt;                  /* '<S1>/IRCalculation' */
+  int32_T firstVolt;                   /* '<S1>/IRCalculation' */
+  boolean_T IRComplete;                /* '<S1>/IRCalculation' */
+  boolean_T cvModeActivated;           /* '<S1>/ChargingAlgorithmProcessing' */
+  boolean_T trickleChargingEnabled;    /* '<S1>/ChargingAlgorithmProcessing' */
 } B_ChargingAlgorithm_T;
 
 /* Block states (default storage) for system '<Root>' */
 typedef struct {
-  uint32_T durationCounter_1;          /* '<S1>/ChargingAlgorithmstep2' */
-  uint32_T durationCounter_1_n;        /* '<S1>/ChargingAlgorithmstep2' */
-  uint32_T durationCounter_1_c;        /* '<S1>/ChargingAlgorithmstep2' */
-  uint32_T durationCounter_1_i;        /* '<S1>/ChargingAlgorithmstep2' */
-  uint32_T durationCounter_2;          /* '<S1>/ChargingAlgorithmstep2' */
-  uint32_T durationCounter_1_l;        /* '<S1>/ChargingAlgorithmstep2' */
-  uint32_T durationCounter_1_h;        /* '<S1>/ChargingAlgorithmstep2' */
-  uint32_T durationCounter_2_p;        /* '<S1>/ChargingAlgorithmstep2' */
-  uint8_T is_c32_ChargingAlgorithm;    /* '<S1>/ChargingAlgorithmstep2' */
-  uint8_T is_TrickleCharging;          /* '<S1>/ChargingAlgorithmstep2' */
-  uint8_T is_NormalCharging;           /* '<S1>/ChargingAlgorithmstep2' */
-  uint8_T is_FastCharging;             /* '<S1>/ChargingAlgorithmstep2' */
-  uint8_T is_SlowCharging;             /* '<S1>/ChargingAlgorithmstep2' */
-  uint8_T is_active_c32_ChargingAlgorithm;/* '<S1>/ChargingAlgorithmstep2' */
-  uint8_T is_c34_ChargingAlgorithm;    /* '<S1>/ChargingAlgorithmstep1' */
-  uint8_T is_active_c34_ChargingAlgorithm;/* '<S1>/ChargingAlgorithmstep1' */
+  uint32_T temporalCounter_i1;         /* '<S1>/IRCalculation' */
+  uint32_T durationCounter_1;          /* '<S1>/IRCalculation' */
+  uint32_T durationCounter_1_f;        /* '<S1>/IRCalculation' */
+  uint32_T durationCounter_1_p;        /* '<S1>/ChargingAlgorithmProcessing' */
+  uint32_T durationCounter_1_n;        /* '<S1>/ChargingAlgorithmProcessing' */
+  uint32_T durationCounter_1_c;        /* '<S1>/ChargingAlgorithmProcessing' */
+  uint32_T durationCounter_1_i;        /* '<S1>/ChargingAlgorithmProcessing' */
+  uint32_T durationCounter_1_im;       /* '<S1>/ChargingAlgorithmProcessing' */
+  uint32_T durationCounter_2;          /* '<S1>/ChargingAlgorithmProcessing' */
+  uint8_T is_c31_ChargingAlgorithm;    /* '<S1>/IRCalculation' */
+  uint8_T is_IRCalculation;            /* '<S1>/IRCalculation' */
+  uint8_T is_active_c31_ChargingAlgorithm;/* '<S1>/IRCalculation' */
+  uint8_T is_c34_ChargingAlgorithm;    /* '<S1>/ChargingStateMachine' */
+  uint8_T is_active_c34_ChargingAlgorithm;/* '<S1>/ChargingStateMachine' */
+  uint8_T is_c32_ChargingAlgorithm;    /* '<S1>/ChargingAlgorithmProcessing' */
+  uint8_T is_TrickleCharging;          /* '<S1>/ChargingAlgorithmProcessing' */
+  uint8_T is_NormalCharging;           /* '<S1>/ChargingAlgorithmProcessing' */
+  uint8_T is_FastCharging;             /* '<S1>/ChargingAlgorithmProcessing' */
+  uint8_T is_SlowCharging;             /* '<S1>/ChargingAlgorithmProcessing' */
+  uint8_T is_active_c32_ChargingAlgorithm;/* '<S1>/ChargingAlgorithmProcessing' */
+  boolean_T IR_COMPLETE;               /* '<S1>/Data Store Memory' */
+  boolean_T IRFastGuard;               /* '<S1>/ChargingStateMachine' */
+  boolean_T IRSlowGuard;               /* '<S1>/ChargingStateMachine' */
 } DW_ChargingAlgorithm_T;
 
 /* Constant parameters (default storage) */
@@ -96,6 +108,8 @@ typedef struct {
 typedef struct {
   real_T RequestedCurrent_mA;          /* '<Root>/RequestedCurrent_mA' */
   ChargeState ChargingState;           /* '<Root>/ChargingState' */
+  real_T internalResistance;           /* '<Root>/internalResistance' */
+  boolean_T IR_Complete;
 } ExtY_ChargingAlgorithm_T;
 
 /* Real-time Model Data Structure */
@@ -130,17 +144,6 @@ extern void ChargingAlgorithm_terminate(void);
 extern RT_MODEL_ChargingAlgorithm_T *const ChargingAlgorithm_M;
 
 /*-
- * These blocks were eliminated from the model due to optimizations:
- *
- * Block '<S1>/Display' : Unused code path elimination
- * Block '<S1>/Display1' : Unused code path elimination
- * Block '<S1>/Display2' : Unused code path elimination
- * Block '<S1>/Display3' : Unused code path elimination
- * Block '<S1>/Scope' : Unused code path elimination
- * Block '<S1>/Scope1' : Unused code path elimination
- */
-
-/*-
  * The generated code includes comments that allow you to trace directly
  * back to the appropriate location in the model.  The basic format
  * is <system>/block_name, where system is the system number (uniquely
@@ -152,14 +155,15 @@ extern RT_MODEL_ChargingAlgorithm_T *const ChargingAlgorithm_M;
  * MATLAB hilite_system command to trace the generated code back
  * to the parent model.  For example,
  *
- * hilite_system('marvelMBD_v00_0A_0D_exported/ChargingAlgorithm')    - opens subsystem marvelMBD_v00_0A_0D_exported/ChargingAlgorithm
- * hilite_system('marvelMBD_v00_0A_0D_exported/ChargingAlgorithm/Kp') - opens and selects block Kp
+ * hilite_system('v00_0A_0E/ChargingAlgorithm')    - opens subsystem v00_0A_0E/ChargingAlgorithm
+ * hilite_system('v00_0A_0E/ChargingAlgorithm/Kp') - opens and selects block Kp
  *
  * Here is the system hierarchy for this model
  *
- * '<Root>' : 'marvelMBD_v00_0A_0D_exported'
- * '<S1>'   : 'marvelMBD_v00_0A_0D_exported/ChargingAlgorithm'
- * '<S2>'   : 'marvelMBD_v00_0A_0D_exported/ChargingAlgorithm/ChargingAlgorithmstep1'
- * '<S3>'   : 'marvelMBD_v00_0A_0D_exported/ChargingAlgorithm/ChargingAlgorithmstep2'
+ * '<Root>' : 'v00_0A_0E'
+ * '<S1>'   : 'v00_0A_0E/ChargingAlgorithm'
+ * '<S2>'   : 'v00_0A_0E/ChargingAlgorithm/ChargingAlgorithmProcessing'
+ * '<S3>'   : 'v00_0A_0E/ChargingAlgorithm/ChargingStateMachine'
+ * '<S4>'   : 'v00_0A_0E/ChargingAlgorithm/IRCalculation'
  */
 #endif                                 /* RTW_HEADER_ChargingAlgorithm_h_ */

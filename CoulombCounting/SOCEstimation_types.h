@@ -7,15 +7,15 @@
  *
  * Code generation for model "SOCEstimation".
  *
- * Model version              : 4.0
+ * Model version              : 4.4
  * Simulink Coder version : 9.8 (R2022b) 13-May-2022
- * C source code generated on : Mon Oct  7 18:53:30 2024
+ * C source code generated on : Wed Oct 23 20:32:49 2024
  *
  * Target selection: grt.tlc
  * Note: GRT includes extra infrastructure and instrumentation for prototyping
  * Embedded hardware selection: STMicroelectronics->Cortex_M3
- * Code generation objective: Execution efficiency
- * Validation result: Passed (9), Warning (1), Error (0)
+ * Code generation objective: Debugging
+ * Validation result: Passed (0), Warning (1), Error (0)
  */
 
 #ifndef RTW_HEADER_SOCEstimation_types_h_
@@ -251,6 +251,9 @@ typedef struct {
 } CC_OutputsBus;
 
 #endif
+
+/* Parameters (default storage) */
+typedef struct P_SOCEstimation_T_ P_SOCEstimation_T;
 
 /* Forward declaration for rtModel */
 typedef struct tag_RTM_SOCEstimation_T RT_MODEL_SOCEstimation_T;

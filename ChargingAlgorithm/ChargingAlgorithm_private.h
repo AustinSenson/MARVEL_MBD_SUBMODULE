@@ -7,9 +7,9 @@
  *
  * Code generation for model "ChargingAlgorithm".
  *
- * Model version              : 4.0
+ * Model version              : 4.4
  * Simulink Coder version : 9.8 (R2022b) 13-May-2022
- * C source code generated on : Mon Oct  7 18:54:16 2024
+ * C source code generated on : Mon Oct 14 20:47:21 2024
  *
  * Target selection: grt.tlc
  * Note: GRT includes extra infrastructure and instrumentation for prototyping
@@ -72,7 +72,6 @@ Verification pane for ERT based targets, which will disable the \
 preprocessor word size checks.
 #endif
 
-extern real_T rt_roundd_snf(real_T u);
 extern void MultiWordSignedWrap(const uint32_T u1[], int32_T n1, uint32_T n2,
   uint32_T y[]);
 extern void sMultiWordMul(const uint32_T u1[], int32_T n1, const uint32_T u2[],

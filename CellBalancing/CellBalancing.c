@@ -7,9 +7,9 @@
  *
  * Code generation for model "CellBalancing".
  *
- * Model version              : 4.0
+ * Model version              : 4.4
  * Simulink Coder version : 9.8 (R2022b) 13-May-2022
- * C source code generated on : Mon Oct  7 18:48:53 2024
+ * C source code generated on : Fri Oct 11 19:04:07 2024
  *
  * Target selection: grt.tlc
  * Note: GRT includes extra infrastructure and instrumentation for prototyping
@@ -23,7 +23,6 @@
 #include "CellBalancing_private.h"
 #include <math.h>
 #include <string.h>
-#include "WriteMosfetsData.h"
 #include "CellBalancing_types.h"
 
 /* Named constants for Chart: '<S1>/BalancingStateMachine' */
@@ -40,10 +39,6 @@
 /* Named constants for Chart: '<S3>/Chart1' */
 #define CellBalancing_IN_PCBTemp_Danger ((uint8_T)1U)
 #define CellBalancing_IN_PCBTemp_Safe  ((uint8_T)2U)
-
-/* Named constants for Chart: '<S3>/Chart2' */
-#define Cell_IN_FastCharge_OVProtectThr ((uint8_T)1U)
-#define Cell_IN_SlowCharge_OVProtectThr ((uint8_T)2U)
 
 /* Block signals (default storage) */
 B_CellBalancing_T CellBalancing_B;
@@ -149,8 +144,8 @@ static void CellBalancing_CellBalance(void)
 /* Model step function */
 void CellBalancing_step(void)
 {
-  int32_T i;
   int32_T q0;
+  int32_T rtb_MaxImbalance_mV_tmp;
   boolean_T rtb_PCBTemp;
 
   /* Chart: '<S3>/Chart1' incorporates:
@@ -189,36 +184,8 @@ void CellBalancing_step(void)
    *  Inport: '<Root>/DataPipeline'
    *  Sum: '<S1>/Subtract'
    */
-  i = CellBalancing_U.DataPipeline.VoltageSenseBus.mV_max -
-    CellBalancing_U.DataPipeline.VoltageSenseBus.mV_min;
-
-  /* Chart: '<S3>/Chart2' incorporates:
-   *  Inport: '<Root>/DataPipeline'
-   *  Inport: '<Root>/Thresholds'
-   */
-  if (CellBalancing_DW.is_active_c4_CellBalancing == 0U) {
-    CellBalancing_DW.is_active_c4_CellBalancing = 1U;
-    CellBalancing_DW.is_c4_CellBalancing = Cell_IN_SlowCharge_OVProtectThr;
-    CellBalancing_B.Balancing_OVThr_mV =
-      CellBalancing_U.Thresholds.Balancing_SlowCh_OVThr_mV;
-  } else if (CellBalancing_DW.is_c4_CellBalancing ==
-             Cell_IN_FastCharge_OVProtectThr) {
-    if ((!CellBalancing_U.DataPipeline.VCU.isChargerConnected) ||
-        (!CellBalancing_U.DataPipeline.VCU.FastCharge)) {
-      CellBalancing_DW.is_c4_CellBalancing = Cell_IN_SlowCharge_OVProtectThr;
-      CellBalancing_B.Balancing_OVThr_mV =
-        CellBalancing_U.Thresholds.Balancing_SlowCh_OVThr_mV;
-    }
-
-    /* case IN_SlowCharge_OVProtectThr: */
-  } else if (CellBalancing_U.DataPipeline.VCU.isChargerConnected &&
-             CellBalancing_U.DataPipeline.VCU.FastCharge) {
-    CellBalancing_DW.is_c4_CellBalancing = Cell_IN_FastCharge_OVProtectThr;
-    CellBalancing_B.Balancing_OVThr_mV =
-      CellBalancing_U.Thresholds.Balancing_FastCh_OVThr_mV;
-  }
-
-  /* End of Chart: '<S3>/Chart2' */
+  rtb_MaxImbalance_mV_tmp = CellBalancing_U.DataPipeline.VoltageSenseBus.mV_max
+    - CellBalancing_U.DataPipeline.VoltageSenseBus.mV_min;
 
   /* Switch: '<S3>/Switch' incorporates:
    *  Inport: '<Root>/DataPipeline'
@@ -227,20 +194,18 @@ void CellBalancing_step(void)
    *  Logic: '<S3>/AND'
    *  Logic: '<S3>/OR1'
    *  RelationalOperator: '<S3>/GreaterThan'
-   *  RelationalOperator: '<S3>/GreaterThan1'
    *  RelationalOperator: '<S3>/GreaterThan2'
    *  RelationalOperator: '<S3>/GreaterThan3'
-   *  RelationalOperator: '<S8>/Compare'
+   *  RelationalOperator: '<S6>/Compare'
    *  Sum: '<S3>/Subtract'
    */
-  CellBalancing_B.BalanceEn = (rtb_PCBTemp && ((i >
+  CellBalancing_B.BalanceEn = (rtb_PCBTemp && ((rtb_MaxImbalance_mV_tmp >
     CellBalancing_U.maxAllowedImbalance) ||
     CellBalancing_U.DataPipeline.VCU.isChargerConnected) &&
     (CellBalancing_U.DataPipeline.VoltageSenseBus.mV_min >
      CellBalancing_U.Thresholds.Balancing_Min_Thr_mV) &&
-    (CellBalancing_U.DataPipeline.VoltageSenseBus.mV_max <
-     CellBalancing_B.Balancing_OVThr_mV) && (i >
-    CellBalancing_U.Thresholds.Balancing_MaxAllowedImb_mV));
+    (rtb_MaxImbalance_mV_tmp >
+     CellBalancing_U.Thresholds.Balancing_MaxAllowedImb_mV));
 
   /* Chart: '<S3>/Chart' incorporates:
    *  Inport: '<Root>/BalancingTempGroup'
@@ -514,23 +479,8 @@ void CellBalancing_step(void)
   /* BusCreator: '<S1>/Bus Creator' incorporates:
    *  Outport: '<Root>/CellBalancingOutput'
    */
-  CellBalancing_Y.CellBalancingOutput.MaxImbalance_mV = i;
+  CellBalancing_Y.CellBalancingOutput.MaxImbalance_mV = rtb_MaxImbalance_mV_tmp;
   CellBalancing_Y.CellBalancingOutput.BalanceEn = CellBalancing_B.BalanceEn;
-
-  /* MATLAB Function: '<S1>/WriteMosfetsData' incorporates:
-   *  Inport: '<Root>/NumberOfMosfets'
-   *  Outport: '<Root>/BalanceCmd'
-   */
-  CellBalancing_WriteMosfetsData(CellBalancing_Y.BalanceCmd,
-    &CellBalancing_B.sf_WriteMosfetsData);
-
-  /* Outport: '<Root>/fetStates' */
-  for (i = 0; i < 18; i++) {
-    CellBalancing_Y.fetStates[i] =
-      CellBalancing_B.sf_WriteMosfetsData.fetStates[i];
-  }
-
-  /* End of Outport: '<Root>/fetStates' */
 }
 
 /* Model initialize function */
@@ -562,11 +512,6 @@ void CellBalancing_initialize(void)
     /* SystemInitialize for Chart: '<S3>/Chart1' */
     CellBalancing_DW.is_active_c26_CellBalancing = 0U;
     CellBalancing_DW.is_c26_CellBalancing = CellBalancin_IN_NO_ACTIVE_CHILD;
-
-    /* SystemInitialize for Chart: '<S3>/Chart2' */
-    CellBalancing_DW.is_active_c4_CellBalancing = 0U;
-    CellBalancing_DW.is_c4_CellBalancing = CellBalancin_IN_NO_ACTIVE_CHILD;
-    CellBalancing_B.Balancing_OVThr_mV = 0;
 
     /* SystemInitialize for Chart: '<S3>/Chart' */
     CellBalancing_DW.is_active_c6_CellBalancing = 0U;
