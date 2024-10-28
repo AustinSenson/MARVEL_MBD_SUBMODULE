@@ -309,6 +309,7 @@ typedef struct {
   ThresholdsBus Thresholds;            /* '<Root>/Thresholds' */
   DataPipelineBus DataPipeline;        /* '<Root>/DataPipeline' */
   real_T Protection_LoopTime_msec;     /* '<Root>/Protection_LoopTime_msec' */
+  real_T looptimeProtection; /* Added variable */
 } ExtU_Protection_T;
 
 /* External outputs (root outports fed by signals with default storage) */

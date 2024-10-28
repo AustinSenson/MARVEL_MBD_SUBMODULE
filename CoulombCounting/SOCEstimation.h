@@ -165,6 +165,7 @@ typedef struct {
   boolean_T triggerLatchPseudo;           /* '<Root>/triggerLatchPseudo' */
   CC_InputsBus CC_Inputs;              /* '<Root>/CC_Inputs' */
   CellBalancingOutputBus CellBalancingOutput;/* '<Root>/CellBalancingOutput' */
+  real_T looptimeSoC; /* Added variable */
 } ExtU_SOCEstimation_T;
 
 /* External outputs (root outports fed by signals with default storage) */

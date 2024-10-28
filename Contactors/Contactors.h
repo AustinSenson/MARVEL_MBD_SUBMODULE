@@ -89,6 +89,7 @@ typedef struct {
   ContactorsFlags PosContactors_FB;    /* '<Root>/PosContactors_FB' */
   ContactorsFlags PreChargeContactors_FB;/* '<Root>/PreChargeContactors_FB' */
   ContactorsFlags NegContactors_FB;    /* '<Root>/NegContactors_FB' */
+  real_T looptimeContactors; /* Added variable */
 } ExtU_Contactors_T;
 
 /* External outputs (root outports fed by signals with default storage) */

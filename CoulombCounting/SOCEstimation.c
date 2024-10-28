@@ -120,7 +120,7 @@ const ProtectionState_Out SOCEstimation_rtZProtectionStat = { NoError,/* Thermal
   NoError                              /* DCLO_CurrentFlag */
 };
 
-void mul_wide_s32(int32_T in0, int32_T in1, uint32_T *ptrOutBitsHi, uint32_T
+void mul_wide_s32_cc(int32_T in0, int32_T in1, uint32_T *ptrOutBitsHi, uint32_T
                   *ptrOutBitsLo)
 {
   uint32_T absIn0;
@@ -166,12 +166,12 @@ void mul_wide_s32(int32_T in0, int32_T in1, uint32_T *ptrOutBitsHi, uint32_T
   *ptrOutBitsLo = in0Lo;
 }
 
-int32_T mul_s32_sat(int32_T a, int32_T b)
+int32_T mul_s32_sat_cc(int32_T a, int32_T b)
 {
   int32_T result;
   uint32_T u32_chi;
   uint32_T u32_clo;
-  mul_wide_s32(a, b, &u32_chi, &u32_clo);
+  mul_wide_s32_cc(a, b, &u32_chi, &u32_clo);
   if (((int32_T)u32_chi > 0) || ((u32_chi == 0U) && (u32_clo >= 2147483648U))) {
     result = MAX_int32_T;
   } else if (((int32_T)u32_chi < -1) || (((int32_T)u32_chi == -1) && (u32_clo <
@@ -303,7 +303,7 @@ void SOCEstimation_step(void)
         SOCEstimation_DW.durationCounter_2_k = 0U;
       }
 
-      if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_2_k * 100)
+      if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_2_k * SOCEstimation_U.looptimeSoC)
           >= SOCEstimation_U.CC_Inputs.SOHCalibrationTimeout_msec) {
         SOCEstimation_B.CalcEnable = 1.0;
         SOCEstimation_DW.durationCounter_2_jc = 0U;
@@ -336,7 +336,7 @@ void SOCEstimation_step(void)
         SOCEstimation_DW.durationCounter_2_j = 0U;
       }
 
-      if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_2_j * 100)
+      if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_2_j * SOCEstimation_U.looptimeSoC)
           >= SOCEstimation_U.CC_Inputs.SOHCalibrationTimeout_msec) {
         SOCEstimation_B.CalcEnable = 1.0;
         SOCEstimation_DW.durationCounter_2_m0 = 0U;
@@ -406,7 +406,7 @@ void SOCEstimation_step(void)
         SOCEstimation_DW.durationCounter_1_g = 0U;
       }
 
-      if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_1_g * 100)
+      if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_1_g * SOCEstimation_U.looptimeSoC)
           >= SOCEstimation_U.CC_Inputs.SOHCalibrationTimeout_msec) {
         SOCEstimation_B.CalcEnable = 0.0;
         SOCEstimation_DW.durationCounter_2_m = 0U;
@@ -442,7 +442,7 @@ void SOCEstimation_step(void)
         SOCEstimation_DW.durationCounter_2 = 0U;
       }
 
-      if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_2 * 100) >=
+      if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_2 * SOCEstimation_U.looptimeSoC) >=
           SOCEstimation_U.CC_Inputs.SOHCalibrationTimeout_msec) {
         SOCEstimation_B.CalcEnable = 1.0;
         SOCEstimation_DW.durationCounter_2_k = 0U;
@@ -476,7 +476,7 @@ void SOCEstimation_step(void)
         SOCEstimation_DW.durationCounter_2_b = 0U;
       }
 
-      if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_2_b * 100)
+      if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_2_b * SOCEstimation_U.looptimeSoC)
           >= SOCEstimation_U.CC_Inputs.SOHCalibrationTimeout_msec) {
         SOCEstimation_B.CalcEnable = 1.0;
         SOCEstimation_DW.durationCounter_2_j = 0U;
@@ -511,7 +511,7 @@ void SOCEstimation_step(void)
         SOCEstimation_DW.durationCounter_2_m = 0U;
       }
 
-      if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_2_m * 100)
+      if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_2_m * SOCEstimation_U.looptimeSoC)
           >= SOCEstimation_U.CC_Inputs.SOHCalibrationTimeout_msec) {
         SOCEstimation_B.CalcEnable = 1.0;
         SOCEstimation_DW.durationCounter_2_b = 0U;
@@ -662,7 +662,7 @@ void SOCEstimation_step(void)
         SOCEstimation_DW.durationCounter_1 = 0U;
       }
 
-      if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_1 * 100) >=
+      if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_1 * SOCEstimation_U.looptimeSoC) >=
           SOCEstimation_U.CC_Inputs.SOHCalibrationTimeout_msec) {
         SOCEstimation_DW.durationCounter_1_i = 0U;
         SOCEstimation_DW.is_c22_SOCEstimation = SOCE_IN_Reset_IntegratedCurrent;
@@ -679,7 +679,7 @@ void SOCEstimation_step(void)
         SOCEstimation_DW.durationCounter_1_i = 0U;
       }
 
-      if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_1_i * 100)
+      if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_1_i * SOCEstimation_U.looptimeSoC)
           >= SOCEstimation_U.CC_Inputs.SOHCalibrationTimeout_msec) {
         SOCEstimation_DW.IntegratedCurrent = 0.0F;
         SOCEstimation_DW.durationCounter_1 = 0U;
@@ -777,7 +777,7 @@ void SOCEstimation_step(void)
       SOCEstimation_DW.durationCounter_1_k = 0U;
     }
 
-    if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_1_k * 100) >
+    if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_1_k * SOCEstimation_U.looptimeSoC) >
         SOCEstimation_U.CC_Inputs.DebouncingTimeout_msec) {
       SOCEstimation_DW.is_c25_SOCEstimation = SOCEstim_IN_FirstCycleCompleted;
       SOCEstimation_B.Final_InstalledCapacity_mAh =
@@ -927,7 +927,7 @@ void SOCEstimation_step(void)
       }
 
       b_hoisted_cond = ((((real_T)(uint32_T)((int32_T)
-        SOCEstimation_DW.durationCounter_1_l * 100) >
+        SOCEstimation_DW.durationCounter_1_l * SOCEstimation_U.looptimeSoC) >
                           SOCEstimation_U.CC_Inputs.DebouncingTimeout_msec) &&
                          SOCEstimation_U.DataPipeline.VCU.isChargerConnected &&
                          (SOCEstimation_U.CellBalancingOutput.MaxImbalance_mV <
@@ -1181,7 +1181,7 @@ void SOCEstimation_step(void)
         SOCEstimation_DW.durationCounter_2_d = 0U;
       }
 
-      if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_2_d * 100)
+      if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_2_d * SOCEstimation_U.looptimeSoC)
           > SOCEstimation_U.CC_Inputs.DebouncingTimeout_msec) {
         /* Outport: '<Root>/pseudoLatchTrigger' */
         SOCEstimation_Y.pseudoLatchTrigger = true;

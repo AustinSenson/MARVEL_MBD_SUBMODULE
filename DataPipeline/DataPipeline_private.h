@@ -72,19 +72,19 @@ Verification pane for ERT based targets, which will disable the \
 preprocessor word size checks.
 #endif
 
-extern real_T rt_roundd_snf(real_T u);
+extern real_T rt_roundd_snf_dp(real_T u);
 extern boolean_T sMultiWordGe(const uint32_T u1[], const uint32_T u2[], int32_T
   n);
-extern int32_T sMultiWordCmp(const uint32_T u1[], const uint32_T u2[], int32_T n);
+extern int32_T sMultiWordCmp_dp(const uint32_T u1[], const uint32_T u2[], int32_T n);
 extern void sMultiWordShl(const uint32_T u1[], int32_T n1, uint32_T n2, uint32_T
   y[], int32_T n);
 extern void sLong2MultiWord(int32_T u, uint32_T y[], int32_T n);
-extern void sMultiWordMul(const uint32_T u1[], int32_T n1, const uint32_T u2[],
+extern void sMultiWordMul_dp(const uint32_T u1[], int32_T n1, const uint32_T u2[],
   int32_T n2, uint32_T y[], int32_T n);
-extern real32_T sMultiWord2Single(const uint32_T u1[], int32_T n1, int32_T e1);
-extern void mul_wide_s32(int32_T in0, int32_T in1, uint32_T *ptrOutBitsHi,
+extern real32_T sMultiWord2Single_dp(const uint32_T u1[], int32_T n1, int32_T e1);
+extern void mul_wide_s32_dp(int32_T in0, int32_T in1, uint32_T *ptrOutBitsHi,
   uint32_T *ptrOutBitsLo);
-extern int32_T mul_s32_sat(int32_T a, int32_T b);
+extern int32_T mul_s32_sat_dp(int32_T a, int32_T b);
 extern int32_T div_nde_s32_floor(int32_T numerator, int32_T denominator);
 
 #endif                                 /* RTW_HEADER_DataPipeline_private_h_ */

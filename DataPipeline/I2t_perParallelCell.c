@@ -20,7 +20,7 @@ void DataPipelin_I2t_perParallelCell(int32_T rtu_SOC, real_T rtu_Temperature_C,
 {
   real_T tmp_0;
   int32_T tmp;
-  tmp_0 = rt_roundd_snf((real_T)rtu_SOC * rtu_Temperature_C);
+  tmp_0 = rt_roundd_snf_dp((real_T)rtu_SOC * rtu_Temperature_C);
   if (tmp_0 < 2.147483648E+9) {
     if (tmp_0 >= -2.147483648E+9) {
       tmp = (int32_T)tmp_0;
@@ -49,5 +49,5 @@ void DataPipelin_I2t_perParallelCell(int32_T rtu_SOC, real_T rtu_Temperature_C,
     tmp = MAX_int32_T;
   }
 
-  localB->i2t_Discharge_A2sec = mul_s32_sat(tmp, 12);
+  localB->i2t_Discharge_A2sec = mul_s32_sat_dp(tmp, 12);
 }
