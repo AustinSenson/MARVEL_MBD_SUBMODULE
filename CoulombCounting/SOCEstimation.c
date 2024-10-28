@@ -7,9 +7,9 @@
  *
  * Code generation for model "SOCEstimation".
  *
- * Model version              : 4.5
+ * Model version              : 4.6
  * Simulink Coder version : 9.8 (R2022b) 13-May-2022
- * C source code generated on : Thu Oct 24 15:16:27 2024
+ * C source code generated on : Sat Oct 26 17:10:56 2024
  *
  * Target selection: grt.tlc
  * Note: GRT includes extra infrastructure and instrumentation for prototyping
@@ -1083,10 +1083,8 @@ void SOCEstimation_step(void)
     SOCEstimation_DW.is_active_c27_SOCEstimation = 1U;
     SOCEstimation_DW.durationCounter_1_mg = 0U;
     SOCEstimation_DW.is_c27_SOCEstimation = SOCEst_IN_LobbyIntegrationState;
-    SOCEstimation_B.TotalCapacityRemains_mAh =
-      SOCEstimation_B.Initial_Capacity_mAh;
-    if (SOCEstimation_B.TotalCapacityRemains_mAh <
-        SOCEstimation_B.sf_UsableCapacity_mAh.MaxUsableCapacity_mAh) {
+    // SOCEstimation_B.TotalCapacityRemains_mAh = 0;
+    if (SOCEstimation_B.sf_UsableCapacity_mAh.MaxUsableCapacity_mAh > 0) {
       SOCEstimation_DW.durationCounter_2_d = 0U;
     }
 
@@ -1098,10 +1096,8 @@ void SOCEstimation_step(void)
       if (SOCEstimation_B.DataTypeConversion1 == 0.0F) {
         SOCEstimation_DW.durationCounter_1_mg = 0U;
         SOCEstimation_DW.is_c27_SOCEstimation = SOCEst_IN_LobbyIntegrationState;
-        SOCEstimation_B.TotalCapacityRemains_mAh =
-          SOCEstimation_B.Initial_Capacity_mAh;
-        if (SOCEstimation_B.TotalCapacityRemains_mAh <
-            SOCEstimation_B.sf_UsableCapacity_mAh.MaxUsableCapacity_mAh) {
+        // SOCEstimation_B.TotalCapacityRemains_mAh = 0;
+        if (SOCEstimation_B.sf_UsableCapacity_mAh.MaxUsableCapacity_mAh > 0) {
           SOCEstimation_DW.durationCounter_2_d = 0U;
         }
 
@@ -1125,9 +1121,9 @@ void SOCEstimation_step(void)
         }
       }
       break;
-
+  
      case SOCEst_IN_LobbyIntegrationState:
-      b_hoisted_cond = ((SOCEstimation_B.Initial_Capacity_mAh ==
+        b_hoisted_cond = ((SOCEstimation_B.Initial_Capacity_mAh ==
                          SOCEstimation_B.sf_UsableCapacity_mAh.MaxUsableCapacity_mAh)
                         && (SOCEstimation_B.DataTypeConversion1 == 1.0F) &&
                         (!SOCEstimation_U.CC_Inputs.pseudoLatchFlag));
@@ -1139,38 +1135,41 @@ void SOCEstimation_step(void)
             SOCEstimation_B.sf_UsableCapacity_mAh.MaxUsableCapacity_mAh) {
           SOCEstimation_DW.durationCounter_2_d = 0U;
         }
-      } else if (SOCEstimation_B.TotalCapacityRemains_mAh <= 0) {
-        SOCEstimation_DW.is_c27_SOCEstimation = SOCEstimation_IN_Zero_Charged;
       } else {
-        b_hoisted_cond = (SOCEstimation_U.CC_Inputs.pseudoLatchFlag &&
-                          SOCEstimation_U.DataPipeline.VCU.isChargerConnected &&
-                          (SOCEstimation_B.DataTypeConversion1 != 1.0F));
-        if (!b_hoisted_cond) {
-          SOCEstimation_DW.durationCounter_1_mg = 0U;
-        }
-
-        if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_1_mg *
-                               100) >
-            SOCEstimation_U.CC_Inputs.DebouncingTimeout_msec) {
-          SOCEstimation_DW.durationCounter_2_d = 0U;
-          SOCEstimation_DW.durationCounter_1_n = 0U;
-          SOCEstimation_DW.is_c27_SOCEstimation =
-            SOCEstima_IN_PseudoLatchHandler;
+        b_hoisted_cond = ((SOCEstimation_B.TotalCapacityRemains_mAh < 0) &&
+                          (!SOCEstimation_U.DataPipeline.VCU.isChargerConnected));
+        if (b_hoisted_cond) {
+          SOCEstimation_DW.is_c27_SOCEstimation = SOCEstimation_IN_Zero_Charged;
         } else {
-          u = SOCEstimation_B.Initial_Capacity_mAh;
-          q1 = SOCEstimation_B.DataTypeConversion3;
-          if ((u < 0) && (q1 < MIN_int32_T - u)) {
-            u = MIN_int32_T;
-          } else if ((u > 0) && (q1 > MAX_int32_T - u)) {
-            u = MAX_int32_T;
-          } else {
-            u += q1;
+          b_hoisted_cond = (SOCEstimation_U.CC_Inputs.pseudoLatchFlag &&
+                            SOCEstimation_U.DataPipeline.VCU.isChargerConnected &&
+                            (SOCEstimation_B.DataTypeConversion1 != 1.0F));
+          if (!b_hoisted_cond) {
+            SOCEstimation_DW.durationCounter_1_mg = 0U;
           }
 
-          SOCEstimation_B.TotalCapacityRemains_mAh = u;
-          if (SOCEstimation_B.TotalCapacityRemains_mAh <
-              SOCEstimation_B.sf_UsableCapacity_mAh.MaxUsableCapacity_mAh) {
+          if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_1_mg *
+               100) > SOCEstimation_U.CC_Inputs.DebouncingTimeout_msec) {
             SOCEstimation_DW.durationCounter_2_d = 0U;
+            SOCEstimation_DW.durationCounter_1_n = 0U;
+            SOCEstimation_DW.is_c27_SOCEstimation =
+              SOCEstima_IN_PseudoLatchHandler;
+          } else {
+            u = SOCEstimation_B.Initial_Capacity_mAh;
+            q1 = SOCEstimation_B.DataTypeConversion3;
+            if ((u < 0) && (q1 < MIN_int32_T - u)) {
+              u = MIN_int32_T;
+            } else if ((u > 0) && (q1 > MAX_int32_T - u)) {
+              u = MAX_int32_T;
+            } else {
+              u += q1;
+            }
+
+            SOCEstimation_B.TotalCapacityRemains_mAh = u;
+            if (SOCEstimation_B.TotalCapacityRemains_mAh <
+                SOCEstimation_B.sf_UsableCapacity_mAh.MaxUsableCapacity_mAh) {
+              SOCEstimation_DW.durationCounter_2_d = 0U;
+            }
           }
         }
       }
@@ -1204,10 +1203,8 @@ void SOCEstimation_step(void)
           SOCEstimation_DW.durationCounter_1_mg = 0U;
           SOCEstimation_DW.is_c27_SOCEstimation =
             SOCEst_IN_LobbyIntegrationState;
-          SOCEstimation_B.TotalCapacityRemains_mAh =
-            SOCEstimation_B.Initial_Capacity_mAh;
-          if (SOCEstimation_B.TotalCapacityRemains_mAh <
-              SOCEstimation_B.sf_UsableCapacity_mAh.MaxUsableCapacity_mAh) {
+          // SOCEstimation_B.TotalCapacityRemains_mAh = 0;
+          if (SOCEstimation_B.sf_UsableCapacity_mAh.MaxUsableCapacity_mAh > 0) {
             SOCEstimation_DW.durationCounter_2_d = 0U;
           }
 
@@ -1238,10 +1235,8 @@ void SOCEstimation_step(void)
       if (SOCEstimation_U.DataPipeline.VCU.isChargerConnected) {
         SOCEstimation_DW.durationCounter_1_mg = 0U;
         SOCEstimation_DW.is_c27_SOCEstimation = SOCEst_IN_LobbyIntegrationState;
-        SOCEstimation_B.TotalCapacityRemains_mAh =
-          SOCEstimation_B.Initial_Capacity_mAh;
-        if (SOCEstimation_B.TotalCapacityRemains_mAh <
-            SOCEstimation_B.sf_UsableCapacity_mAh.MaxUsableCapacity_mAh) {
+        SOCEstimation_B.TotalCapacityRemains_mAh = 0;
+        if (SOCEstimation_B.sf_UsableCapacity_mAh.MaxUsableCapacity_mAh > 0) {
           SOCEstimation_DW.durationCounter_2_d = 0U;
         }
 
@@ -1516,7 +1511,7 @@ void SOCEstimation_initialize(void)
   /* SystemInitialize for Chart: '<S3>/Chart' */
   SOCEstimation_DW.is_active_c27_SOCEstimation = 0U;
   SOCEstimation_DW.is_c27_SOCEstimation = SOCEstimatio_IN_NO_ACTIVE_CHILD;
-  SOCEstimation_B.TotalCapacityRemains_mAh = 2;
+  SOCEstimation_B.TotalCapacityRemains_mAh = 0;
 
   /* SystemInitialize for Outport: '<Root>/pseudoLatchTrigger' incorporates:
    *  Chart: '<S3>/Chart'

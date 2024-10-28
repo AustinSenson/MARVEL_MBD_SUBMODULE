@@ -549,7 +549,7 @@ void ChargingAlgorithm_step(void)
             /* case IN_CV: */
             ChargingAlgorithm_B.Constant_K =
               ChargingAlgorithm_U.Thresholds.FastCharge_CV_K;
-            ChargingAlgorithm_B.cvModeActivated = true;
+            ChargingAlgorithm_B.cvModeActivated = false;
           }
         } else {
           /* case IN_SlowCharging: */
