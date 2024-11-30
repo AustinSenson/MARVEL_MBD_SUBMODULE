@@ -20,6 +20,7 @@ extern coulombCountingOutput_t ccOutputDataEEPROM;
 extern coulombCountingOutput_t ccOutputDataFlash;
 extern coulombCountingOutput_t ccOutputData;
 extern bool bypassEEPROMFetchRead;
+extern uint8_t eepromCorrupted;
 uint8_t ReadFromFlashCounter = 0;
 
 /* Output and update for atomic system: '<S1>/SOC_ReadFromFlash' */
@@ -28,12 +29,15 @@ void SOCEstimation_SOC_ReadFromFlash(B_SOC_ReadFromFlash_SOCEstima_T *localB)
     if((ReadFromFlashCounter == 0) || (bypassEEPROMFetchRead))
     {
         //totalCapacityRemaining from previous cycle will be the initial capacity for next cycle
-        #ifdef SOC_IN_FLASH
-        localB->CapacityRemains_mAh = ccOutputDataFlash.totalCapacityRemaining;
-        #else
+        if(eepromCorrupted)
+        {
+        localB->CapacityRemains_mAh = ccOutputDataFlash.totalCapacityRemaining;     //TotalCapacityRemaining from Flash
+        }
+        else
+        {
         localB->CapacityRemains_mAh = ccOutputDataEEPROM.totalCapacityRemaining;
         // localB->CapacityRemains_mAh = 90000;
-        #endif
+        }
 
         ReadFromFlashCounter = 1;
     }
