@@ -1136,7 +1136,7 @@ void SOCEstimation_step(void)
           SOCEstimation_DW.durationCounter_2_d = 0U;
         }
       } else {
-        b_hoisted_cond = ((SOCEstimation_B.TotalCapacityRemains_mAh < 0) &&
+        b_hoisted_cond = ((SOCEstimation_B.TotalCapacityRemains_mAh < (-1000)) &&           //- 1A tolerance for Zero Charged State
                           (!SOCEstimation_U.DataPipeline.VCU.isChargerConnected));
         if (b_hoisted_cond) {
           SOCEstimation_DW.is_c27_SOCEstimation = SOCEstimation_IN_Zero_Charged;
