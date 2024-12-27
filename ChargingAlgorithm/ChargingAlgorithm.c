@@ -825,6 +825,8 @@ void ChargingAlgorithm_step(void)
         ChargingAlgorithm_DW.is_IRCalculation = ChargingAlgorith_IN_IRCalcBegin;
         ChargingAlgorithm_DW.temporalCounter_i1 = 0U;
       }
+      ChargingAlgorithm_B.internalResistancePulseCurrent = 
+              ChargingAlgorithm_Y.RequestedCurrent_mA;
       break;
 
      case ChargingAlgori_IN_IRCalculation:
