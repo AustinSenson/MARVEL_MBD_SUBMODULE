@@ -25,9 +25,10 @@
 #define DEFINED_TYPEDEF_FOR_CCState_
 
 typedef enum {
-  CoulombCounting = 0,                 /* Default value */
-  Recalibrate,
-  Vehicle_at_Rest
+  Vehicle_at_Rest = 0,                 /* Default value */
+  CoulombCounting,
+  PseudoLatching,
+  Recalibrate
 } CCState;
 
 #endif
@@ -38,13 +39,12 @@ typedef enum {
 typedef struct {
   int32_T Initial_Capacity_mAh;
   int32_T Total_CapacityRemains_mAh;
-  int32_T Total_Discharge_mAh;
   int32_T SOC_cpct;
   CCState CC_State;
   int32_T MaxUsableCapacity_mAh;
   int32_T TotalCapacityExchange_mAh;
-  int32_T SOH_cpct;
-  real32_T CycleCount;
+  real32_T SOH_pct;
+  real32_T SoH2;
 } CC_OutputsBus;
 
 #endif
