@@ -7,71 +7,40 @@
  *
  * Code generation for model "SOCEstimation".
  *
- * Model version              : 4.6
- * Simulink Coder version : 9.8 (R2022b) 13-May-2022
- * C source code generated on : Sat Oct 26 17:10:56 2024
+ * Model version              : 7.76
+ * Simulink Coder version : 24.1 (R2024a) 19-Nov-2023
+ * C source code generated on : Fri Jan 17 17:05:33 2025
  *
  * Target selection: grt.tlc
  * Note: GRT includes extra infrastructure and instrumentation for prototyping
- * Embedded hardware selection: STMicroelectronics->Cortex_M3
- * Code generation objective: Debugging
- * Validation result: Passed (0), Warning (1), Error (0)
+ * Embedded hardware selection: ARM Compatible->ARM Cortex-M
+ * Code generation objective: Execution efficiency
+ * Validation result: All passed
  */
 
 #include "SOCEstimation.h"
 #include "rtwtypes.h"
 #include "SOCEstimation_types.h"
-#include "UsableCapacity_mAh.h"
-#include "VoltagemV_Vs_CapacitymAh.h"
-#include "SOC_ReadFromFlash.h"
+#include "SOC_ReadFromEEPROM.h"
 #include <math.h>
-#include "SOC_WriteToFlash.h"
 #include <string.h>
-#include "SOCEstimation_private.h"
 
-/* Named constants for Chart: '<S1>/Chart' */
-#define SOCEstim_IN_FirstCycleCompleted ((uint8_T)1U)
-#define SOCEstimatio_IN_NO_ACTIVE_CHILD ((uint8_T)0U)
-#define SOCEstimation_IN_Lobby         ((uint8_T)2U)
-
-/* Named constants for Chart: '<S3>/Chart' */
-#define SOCEst_IN_LobbyIntegrationState ((uint8_T)2U)
-#define SOCEstima_IN_PseudoLatchHandler ((uint8_T)3U)
-#define SOCEstimation_IN_Fully_Charged ((uint8_T)1U)
-#define SOCEstimation_IN_Zero_Charged  ((uint8_T)4U)
-
-/* Named constants for Chart: '<S3>/Chart1' */
+/* Named constants for Chart: '<S3>/IntegCurrent' */
 #define SOCEstimat_IN_IntegratedCurrent ((uint8_T)1U)
 #define SOCEstimatio_IN_IntegratorReset ((uint8_T)2U)
+#define SOCEstimatio_IN_NO_ACTIVE_CHILD ((uint8_T)0U)
 
-/* Named constants for Chart: '<S4>/SOC_Calibration' */
-#define SOCEsti_IN_Recalibrate_Charging ((uint8_T)2U)
+/* Named constants for Chart: '<S3>/SOC_Calibration' */
+#define SOCEsti_IN_Recalibrate_Charging ((uint8_T)3U)
 #define SOCEstimatio_IN_CoulombCounting ((uint8_T)1U)
-#define SOCEstimatio_IN_Vehicle_at_Rest ((uint8_T)3U)
-
-/* Named constants for Chart: '<S8>/SOH_Calibration' */
-#define SOCEstimatio_IN_TestBench_Entry ((uint8_T)7U)
-#define SOCEstimation_IN_Full_Charge   ((uint8_T)1U)
-#define SOCEstimation_IN_Full_Discharge ((uint8_T)2U)
-#define SOCEstimation_IN_Int1          ((uint8_T)3U)
-#define SOCEstimation_IN_Int2          ((uint8_T)4U)
-#define SOCEstimation_IN_Int3          ((uint8_T)5U)
-#define SOCEstimation_IN_Int4          ((uint8_T)6U)
-
-/* Named constants for Chart: '<S18>/Chart' */
-#define SOCE_IN_Reset_IntegratedCurrent ((uint8_T)2U)
-
-/* Exported block states */
-boolean_T PSEUDO_LATCH_SUCCESS;        /* '<S1>/Data Store Memory2' */
+#define SOCEstimatio_IN_Vehicle_at_Rest ((uint8_T)4U)
+#define SOCEstimation_IN_PseudoLatching ((uint8_T)2U)
 
 /* Block signals (default storage) */
 B_SOCEstimation_T SOCEstimation_B;
 
 /* Block states (default storage) */
 DW_SOCEstimation_T SOCEstimation_DW;
-
-/* Previous zero-crossings (trigger) states */
-PrevZCX_SOCEstimation_T SOCEstimation_PrevZCX;
 
 /* External inputs (root inport signals with default storage) */
 ExtU_SOCEstimation_T SOCEstimation_U;
@@ -82,15 +51,22 @@ ExtY_SOCEstimation_T SOCEstimation_Y;
 /* Real-time model */
 static RT_MODEL_SOCEstimation_T SOCEstimation_M_;
 RT_MODEL_SOCEstimation_T *const SOCEstimation_M = &SOCEstimation_M_;
+
+/* Forward declaration for local functions */
+static void SOCEstimation_calculate(int32_T vMax, int32_T vMin, int32_T
+  Current_mA, int32_T MaxCurrentLimit_mA, int32_T MinCurrentLimit_mA, uint16_T
+  minVoltageForLatch, real32_T cycleCount, boolean_T isChargerConnected,
+  boolean_T fullChargeLatch, boolean_T pseudoChargeLatch, int32_T
+  capacityRemains, int32_T MaxImbalance_mV, int32_T MaxAllowedImb_mV, int32_T
+  *capacLatch, boolean_T *calcSoH, boolean_T *latchMake);
 const CC_OutputsBus SOCEstimation_rtZCC_OutputsBus = { 0,/* Initial_Capacity_mAh */
   0,                                   /* Total_CapacityRemains_mAh */
-  0,                                   /* Total_Discharge_mAh */
   0,                                   /* SOC_cpct */
-  CoulombCounting,                     /* CC_State */
+  Vehicle_at_Rest,                     /* CC_State */
   0,                                   /* MaxUsableCapacity_mAh */
   0,                                   /* TotalCapacityExchange_mAh */
-  0,                                   /* SOH_cpct */
-  0.0F                                 /* CycleCount */
+  0.0F,                                /* SOH_pct */
+  0.0F                                 /* SoH2 */
 };
 
 const CellBalancingOutputBus SOCEstimation_rtZCellBalancingO = { 0,/* MaxImbalance_mV */
@@ -98,1315 +74,742 @@ const CellBalancingOutputBus SOCEstimation_rtZCellBalancingO = { 0,/* MaxImbalan
   Terminate                            /* CurrentBalancingState */
 };
 
-const ProtectionState_Out SOCEstimation_rtZProtectionStat = { NoError,/* ThermalRunaway */
-  NoError,                             /* TemperatureGradient */
-  NoError,                             /* HighImbalanceFlag */
-  NoError,                             /* ShortCircuitDetect */
-  NoError,                             /* SuddenVoltageDrop */
-  NoError,                             /* OV */
-  NoError,                             /* UV */
-  NoError,                             /* OCC */
-  NoError,                             /* OCD */
-  0.0F,                                /* i2t_Calculated_A2sec */
-  NoError,                             /* eFuseChargeFlag */
-  NoError,                             /* eFuseDischargeFlag */
-  NoErr,                               /* TempState1 */
-  NoErr,                               /* TempState2 */
-  NoError,                             /* FlagGroup1 */
-  NoError,                             /* FlagGroup2 */
-  NoError,                             /* TempOverallState */
-  NoError,                             /* ErrorDetect */
-  NoError,                             /* DCLI_CurrentFlag */
-  NoError                              /* DCLO_CurrentFlag */
-};
-
-void mul_wide_s32_cc(int32_T in0, int32_T in1, uint32_T *ptrOutBitsHi, uint32_T
-                  *ptrOutBitsLo)
+/*
+ * Function for Chart: '<S3>/SOC_Calibration'
+ * function [capacLatch, calcSoH, latchMake]  = calculate(vMax, vMin, Current_mA, MaxCurrentLimit_mA,...
+ *  MinCurrentLimit_mA, minVoltageForLatch, cycleCount, isChargerConnected,...
+ *     fullChargeLatch, pseudoChargeLatch, capacityRemains, MaxImbalance_mV, ...
+ *     MaxAllowedImb_mV)
+ */
+static void SOCEstimation_calculate(int32_T vMax, int32_T vMin, int32_T
+  Current_mA, int32_T MaxCurrentLimit_mA, int32_T MinCurrentLimit_mA, uint16_T
+  minVoltageForLatch, real32_T cycleCount, boolean_T isChargerConnected,
+  boolean_T fullChargeLatch, boolean_T pseudoChargeLatch, int32_T
+  capacityRemains, int32_T MaxImbalance_mV, int32_T MaxAllowedImb_mV, int32_T
+  *capacLatch, boolean_T *calcSoH, boolean_T *latchMake)
 {
-  uint32_T absIn0;
-  uint32_T absIn1;
-  uint32_T in0Hi;
-  uint32_T in0Lo;
-  uint32_T in1Hi;
-  uint32_T productHiLo;
-  uint32_T productLoHi;
-  absIn0 = in0 < 0 ? ~(uint32_T)in0 + 1U : (uint32_T)in0;
-  absIn1 = in1 < 0 ? ~(uint32_T)in1 + 1U : (uint32_T)in1;
-  in0Hi = absIn0 >> 16U;
-  in0Lo = absIn0 & 65535U;
-  in1Hi = absIn1 >> 16U;
-  absIn0 = absIn1 & 65535U;
-  productHiLo = in0Hi * absIn0;
-  productLoHi = in0Lo * in1Hi;
-  absIn0 *= in0Lo;
-  absIn1 = 0U;
-  in0Lo = (productLoHi << 16U) + absIn0;
-  if (in0Lo < absIn0) {
-    absIn1 = 1U;
-  }
+  /* MATLAB Function 'calculate': '<S10>:174' */
+  /* '<S10>:174:6' if (((fullChargeLatch || pseudoChargeLatch) == false) && isChargerConnected == 1) */
+  if ((!fullChargeLatch) && (!pseudoChargeLatch) && isChargerConnected) {
+    boolean_T guard1;
 
-  absIn0 = in0Lo;
-  in0Lo += productHiLo << 16U;
-  if (in0Lo < absIn0) {
-    absIn1++;
-  }
+    /* '<S10>:174:8' if ((vMin >= minVoltageForLatch) && (abs(Current_mA) < MaxCurrentLimit_mA && ... */
+    /* '<S10>:174:9'             abs(Current_mA) > MinCurrentLimit_mA) &&  isChargerConnected == 1 && ... */
+    /* '<S10>:174:10'                 MaxImbalance_mV < MaxAllowedImb_mV) */
+    guard1 = false;
+    if (vMin >= minVoltageForLatch) {
+      int32_T tmp;
+      if (Current_mA < 0) {
+        if (Current_mA <= MIN_int32_T) {
+          tmp = MAX_int32_T;
+        } else {
+          tmp = -Current_mA;
+        }
+      } else {
+        tmp = Current_mA;
+      }
 
-  absIn0 = (((productLoHi >> 16U) + (productHiLo >> 16U)) + in0Hi * in1Hi) +
-    absIn1;
-  if ((in0 != 0) && ((in1 != 0) && ((in0 > 0) != (in1 > 0)))) {
-    absIn0 = ~absIn0;
-    in0Lo = ~in0Lo;
-    in0Lo++;
-    if (in0Lo == 0U) {
-      absIn0++;
+      if (tmp < MaxCurrentLimit_mA) {
+        if (Current_mA < 0) {
+          if (Current_mA <= MIN_int32_T) {
+            tmp = MAX_int32_T;
+          } else {
+            tmp = -Current_mA;
+          }
+        } else {
+          tmp = Current_mA;
+        }
+
+        if ((tmp > MinCurrentLimit_mA) && (MaxImbalance_mV < MaxAllowedImb_mV))
+        {
+          /* '<S10>:174:11' capacLatch = int32(capacityRemains); */
+          *capacLatch = capacityRemains;
+
+          /* '<S10>:174:12' calcSoH  = true; */
+          *calcSoH = true;
+
+          /* '<S10>:174:13' latchMake = true; */
+          *latchMake = true;
+        } else {
+          guard1 = true;
+        }
+      } else {
+        guard1 = true;
+      }
+    } else {
+      guard1 = true;
     }
-  }
 
-  *ptrOutBitsHi = absIn0;
-  *ptrOutBitsLo = in0Lo;
-}
+    if (guard1) {
+      if ((vMax >= 3550) && (cycleCount > 200.0F)) {
+        /* '<S10>:174:15' elseif ((vMax >= 3550 && cycleCount> 200)) */
+        /* '<S10>:174:16' capacLatch = int32(capacityRemains); */
+        *capacLatch = capacityRemains;
 
-int32_T mul_s32_sat_cc(int32_T a, int32_T b)
-{
-  int32_T result;
-  uint32_T u32_chi;
-  uint32_T u32_clo;
-  mul_wide_s32_cc(a, b, &u32_chi, &u32_clo);
-  if (((int32_T)u32_chi > 0) || ((u32_chi == 0U) && (u32_clo >= 2147483648U))) {
-    result = MAX_int32_T;
-  } else if (((int32_T)u32_chi < -1) || (((int32_T)u32_chi == -1) && (u32_clo <
-               2147483648U))) {
-    result = MIN_int32_T;
+        /* '<S10>:174:17' calcSoH  = true; */
+        *calcSoH = true;
+
+        /* '<S10>:174:18' latchMake = false; */
+        *latchMake = false;
+      } else {
+        /* '<S10>:174:20' else */
+        /* '<S10>:174:21' capacLatch = int32(capacityRemains); */
+        *capacLatch = capacityRemains;
+
+        /* '<S10>:174:22' calcSoH  = false; */
+        *calcSoH = false;
+
+        /* '<S10>:174:23' latchMake = false; */
+        *latchMake = false;
+      }
+    }
   } else {
-    result = (int32_T)u32_clo;
-  }
+    /* '<S10>:174:25' else */
+    /* '<S10>:174:26' capacLatch = int32(capacityRemains); */
+    *capacLatch = capacityRemains;
 
-  return result;
+    /* '<S10>:174:27' calcSoH  = false; */
+    *calcSoH = false;
+
+    /* '<S10>:174:28' latchMake = false; */
+    *latchMake = false;
+  }
 }
 
 /* Model step function */
 void SOCEstimation_step(void)
 {
-  int32_T q1;
-  int32_T u;
-  int32_T u2;
-  boolean_T b_hoisted_cond;
+  real_T coefficients[5];
+  real_T rtb_DataTypeConversion4;
+  real_T rtb_MaxUsableCapacity_mAh;
+  real_T rtb_factor1;
+  real_T rtb_weight1;
+  int32_T rtb_DataTypeConversion3;
+  int32_T rtb_Switch;
+  int32_T tmp;
+  int32_T tmp_0;
+  real32_T rtb_SoH2;
+  boolean_T tmp_1;
 
-  /* Gain: '<S3>/CC_Inputs.SensorAccuracy_pct//100' incorporates:
-   *  Inport: '<Root>/Current_mA'
-   */
-  SOCEstimation_B.CC_InputsSensorAccuracy_pct100 = (real32_T)
-    SOCEstimation_P.CC_InputsSensorAccuracy_pct100_ * (real32_T)
-    SOCEstimation_U.Current_mA;
+  /* MATLAB Function: '<S1>/SOC_ReadFromEEPROM' */
+  SOCEstimatio_SOC_ReadFromEEPROM(&SOCEstimation_B.sf_SOC_ReadFromEEPROM);
 
-  /* Sum: '<S3>/Add1' incorporates:
-   *  Inport: '<Root>/CC_Inputs'
+  /* Outputs for Enabled SubSystem: '<S1>/SoH calculation' incorporates:
+   *  EnablePort: '<S5>/Enable'
    */
-  SOCEstimation_B.absCurrent_mA = ((real32_T)
-    SOCEstimation_U.CC_Inputs.SensorOffset_mA + (real32_T)
-    SOCEstimation_U.CC_Inputs.BleedingCurrent_mA) +
-    SOCEstimation_B.CC_InputsSensorAccuracy_pct100;
+  if (SOCEstimation_B.sf_SOC_ReadFromEEPROM.SoHCalcEn) {
+    SOCEstimation_DW.SoHcalculation_MODE = true;
 
-  /* Switch: '<S4>/Switch3' incorporates:
-   *  Inport: '<Root>/DataPipeline'
-   */
-  if (SOCEstimation_U.DataPipeline.VCU.FastCharge) {
-    /* Switch: '<S4>/Switch3' incorporates:
+    /* MATLAB Function: '<S13>/MATLAB Function' incorporates:
+     *  DataTypeConversion: '<S13>/Data Type Conversion1'
      *  Inport: '<Root>/CC_Inputs'
      */
-    SOCEstimation_B.MinCurrentLimit_mA =
-      SOCEstimation_U.CC_Inputs.FastCharge.MinCurrentLimit_mA;
-  } else {
-    /* Switch: '<S4>/Switch3' incorporates:
-     *  Inport: '<Root>/CC_Inputs'
+    /* MATLAB Function 'SOCEstimation/SoH calculation/SoH1 calculation/MATLAB Function': '<S16>:1' */
+    /* '<S16>:1:4' coefficients = [ A, B, C, D, E]; */
+    coefficients[0] = SOCEstimation_U.CC_Inputs.Coefficients.elementZero;
+    coefficients[1] = SOCEstimation_U.CC_Inputs.Coefficients.elementOne;
+    coefficients[2] = SOCEstimation_U.CC_Inputs.Coefficients.elementTwo;
+    coefficients[3] = SOCEstimation_U.CC_Inputs.Coefficients.elementThree;
+    coefficients[4] = SOCEstimation_U.CC_Inputs.Coefficients.elementFour;
+
+    /* '<S16>:1:5' y = 0.0; */
+    rtb_DataTypeConversion4 = 0.0;
+
+    /* '<S16>:1:7' for i = 1:length(coefficients) */
+    for (rtb_Switch = 0; rtb_Switch < 5; rtb_Switch++) {
+      /* '<S16>:1:8' y = y + coefficients(i) * cycleCount^(5 - (i)); */
+      rtb_DataTypeConversion4 += pow
+        (SOCEstimation_B.sf_SOC_ReadFromEEPROM.cycleCount, 5.0 - ((real_T)
+          rtb_Switch + 1.0)) * coefficients[rtb_Switch];
+    }
+
+    /* Saturate: '<S13>/Saturation' incorporates:
+     *  MATLAB Function: '<S13>/MATLAB Function'
      */
-    SOCEstimation_B.MinCurrentLimit_mA =
-      SOCEstimation_U.CC_Inputs.SlowCharge.MinCurrentLimit_mA;
+    if (rtb_DataTypeConversion4 > 100.0) {
+      rtb_DataTypeConversion4 = 100.0;
+    } else if (rtb_DataTypeConversion4 < 0.0) {
+      rtb_DataTypeConversion4 = 0.0;
+    }
+
+    /* End of Saturate: '<S13>/Saturation' */
+
+    /* Switch: '<S12>/Switch' incorporates:
+     *  Abs: '<S12>/Abs'
+     *  Constant: '<S12>/Constant'
+     *  Constant: '<S15>/Constant2'
+     *  Constant: '<S15>/Constant3'
+     *  DataTypeConversion: '<S13>/Data Type Conversion'
+     *  Inport: '<Root>/CC_Inputs'
+     *  Logic: '<S12>/AND'
+     *  Product: '<S15>/Product'
+     *  Product: '<S15>/Product1'
+     *  Product: '<S15>/Product2'
+     *  RelationalOperator: '<S12>/GreaterThan'
+     *  RelationalOperator: '<S12>/GreaterThan1'
+     *  Sum: '<S12>/Subtract2'
+     *  Sum: '<S15>/Add1'
+     *  Sum: '<S15>/Subtract'
+     */
+    if ((fabsf(SOCEstimation_B.sf_SOC_ReadFromEEPROM.SoH2 - (real32_T)
+               rtb_DataTypeConversion4) > SOCEstimation_U.CC_Inputs.SoHThresh) &&
+        SOCEstimation_B.sf_SOC_ReadFromEEPROM.PrevLatch &&
+        (SOCEstimation_B.sf_SOC_ReadFromEEPROM.SoH2 > 50.0F)) {
+      /* Product: '<S15>/Divide1' incorporates:
+       *  Constant: '<S15>/Constant1'
+       */
+      rtb_MaxUsableCapacity_mAh = SOCEstimation_B.sf_SOC_ReadFromEEPROM.SoH2 /
+        100.0;
+
+      /* Product: '<S15>/Divide' incorporates:
+       *  Constant: '<S15>/Constant'
+       */
+      rtb_factor1 = (real32_T)rtb_DataTypeConversion4 / 100.0;
+
+      /* Product: '<S15>/Divide2' incorporates:
+       *  Sum: '<S15>/Add'
+       */
+      rtb_weight1 = rtb_factor1 / (rtb_factor1 + rtb_MaxUsableCapacity_mAh);
+      rtb_MaxUsableCapacity_mAh = ((1.0 - rtb_weight1) *
+        rtb_MaxUsableCapacity_mAh + rtb_factor1 * rtb_weight1) * 100.0;
+    } else {
+      rtb_MaxUsableCapacity_mAh = (real32_T)rtb_DataTypeConversion4;
+    }
+
+    /* End of Switch: '<S12>/Switch' */
+
+    /* Saturate: '<S12>/Saturation' */
+    if (rtb_MaxUsableCapacity_mAh > 100.0) {
+      rtb_MaxUsableCapacity_mAh = 100.0;
+    } else if (rtb_MaxUsableCapacity_mAh < 0.0) {
+      rtb_MaxUsableCapacity_mAh = 0.0;
+    }
+
+    /* End of Saturate: '<S12>/Saturation' */
+    /* Switch: '<S5>/Switch' incorporates:
+     *  RelationalOperator: '<S5>/GreaterThan'
+     */
+    if ((rtb_MaxUsableCapacity_mAh >= SOCEstimation_B.sf_SOC_ReadFromEEPROM.SoH) && SOCEstimation_B.sf_SOC_ReadFromEEPROM.PrevLatch)
+    {
+      /* Switch: '<S5>/Switch' */
+      SOCEstimation_B.Switch = SOCEstimation_B.sf_SOC_ReadFromEEPROM.SoH;
+    } else {
+      /* Switch: '<S5>/Switch' */
+      SOCEstimation_B.Switch = (real32_T)rtb_MaxUsableCapacity_mAh;
+    }
+
+    /* End of Switch: '<S5>/Switch' */
+
+    /* Product: '<S14>/Product4' incorporates:
+     *  Constant: '<S14>/Constant3'
+     *  Inport: '<Root>/CC_Inputs'
+     *  Product: '<S14>/Divide3'
+     */
+    rtb_DataTypeConversion4 = (real_T)
+      SOCEstimation_U.CC_Inputs.InstalledCapacity_mAh / 100.0 *
+      SOCEstimation_B.Switch;
+
+    /* DataTypeConversion: '<S14>/Data Type Conversion1' incorporates:
+     *  DataTypeConversion: '<S14>/Data Type Conversion2'
+     */
+    SOCEstimation_B.Effectiveusablecapacity = (int32_T)floorf((real32_T)
+      rtb_DataTypeConversion4);
+  } else {
+    SOCEstimation_DW.SoHcalculation_MODE = false;
   }
 
-  /* End of Switch: '<S4>/Switch3' */
+  /* End of Outputs for SubSystem: '<S1>/SoH calculation' */
 
-  /* DiscreteIntegrator: '<S7>/Discrete-Time Integrator' */
-  SOCEstimation_B.DiscreteTimeIntegrator =
-    SOCEstimation_DW.DiscreteTimeIntegrator_DSTATE;
+  /* MATLAB Function: '<S6>/MATLAB Function' incorporates:
+   *  Constant: '<S6>/Constant'
+   */
+  /* MATLAB Function 'SOCEstimation/Subsystem/MATLAB Function': '<S17>:1' */
+  /* '<S17>:1:3' if isempty(counter) */
+  if (!SOCEstimation_DW.counter_not_empty) {
+    /* '<S17>:1:4' counter = init_value; */
+    SOCEstimation_DW.counter = 0.0;
+    SOCEstimation_DW.counter_not_empty = true;
+  } else if (SOCEstimation_DW.counter != 9.0) {
+    if(SOCEstimation_DW.counter == 7.0) {        //manually added
+          memoryWriteOverride = true;
+        }
+    /* '<S17>:1:7' else */
+    /* '<S17>:1:8' counter = counter + 1; */
+    SOCEstimation_DW.counter++;
+  } else {
+    /* '<S17>:1:5' elseif counter == 9 */
+    /* '<S17>:1:6' counter = counter; */
+  }
 
-  /* Abs: '<S7>/Abs' incorporates:
+  /* Chart: '<S3>/IntegCurrent' incorporates:
+   *  DataTypeConversion: '<S3>/Data Type Conversion1'
    *  Inport: '<Root>/Current_mA'
-   */
-  u = SOCEstimation_U.Current_mA;
-  if (u < 0) {
-    /* Abs: '<S7>/Abs' */
-    SOCEstimation_B.absCurrent_mA_p = -u;
-  } else {
-    /* Abs: '<S7>/Abs' */
-    SOCEstimation_B.absCurrent_mA_p = u;
-  }
-
-  /* End of Abs: '<S7>/Abs' */
-
-  /* Chart: '<S7>/Chart' incorporates:
    *  Inport: '<Root>/DataPipeline'
+   *  UnitDelay: '<S3>/Unit Delay'
    */
-  if (SOCEstimation_DW.is_active_c19_SOCEstimation == 0U) {
-    SOCEstimation_DW.is_active_c19_SOCEstimation = 1U;
+  /* '<S17>:1:10' counterOut = counter; */
+  /* Gateway: SOCEstimation/SOC_Calc/IntegCurrent */
+  /* During: SOCEstimation/SOC_Calc/IntegCurrent */
+  if (SOCEstimation_DW.is_active_c42_SOCEstimation == 0U) {
+    /* Entry: SOCEstimation/SOC_Calc/IntegCurrent */
+    SOCEstimation_DW.is_active_c42_SOCEstimation = 1U;
+
+    /* Entry Internal: SOCEstimation/SOC_Calc/IntegCurrent */
+    /* Transition: '<S8>:4' */
+    SOCEstimation_DW.is_c42_SOCEstimation = SOCEstimat_IN_IntegratedCurrent;
+
+    /* Entry 'IntegratedCurrent': '<S8>:3' */
+  } else if (SOCEstimation_DW.is_c42_SOCEstimation ==
+             SOCEstimat_IN_IntegratedCurrent) {
+    /* During 'IntegratedCurrent': '<S8>:3' */
+    /* '<S8>:8:1' sf_internal_predicateOutput = CC_State ==0  || CC_State == 3; */
+    if (((int32_T)SOCEstimation_DW.CCState_k == 0) || ((int32_T)
+         SOCEstimation_DW.CCState_k == 3)) {
+      /* Transition: '<S8>:8' */
+      SOCEstimation_DW.is_c42_SOCEstimation = SOCEstimatio_IN_IntegratorReset;
+
+      /* Entry 'IntegratorReset': '<S8>:7' */
+    } else {
+      /* '<S8>:3:3' IntegratedCurrent = single(single(LoopTimer_SOC_msec)*single(Current_mA))+IntegratedCurrent; */
+      SOCEstimation_B.IntegratedCurrent +=
+        SOCEstimation_U.DataPipeline.LoopTimer_SOC_msec * (real32_T)
+        SOCEstimation_U.Current_mA;
+    }
+
+    /* During 'IntegratorReset': '<S8>:7' */
+    /* '<S8>:12:1' sf_internal_predicateOutput = CC_State ==1 || CC_State ==2; */
+  } else if (((int32_T)SOCEstimation_DW.CCState_k == 1) || ((int32_T)
+              SOCEstimation_DW.CCState_k == 2)) {
+    /* Transition: '<S8>:12' */
+    SOCEstimation_DW.is_c42_SOCEstimation = SOCEstimat_IN_IntegratedCurrent;
+
+    /* Entry 'IntegratedCurrent': '<S8>:3' */
   } else {
-    SOCEstimation_B.IntegratedCurrent_h +=
-      SOCEstimation_U.DataPipeline.LoopTimer_SOC_msec * (real32_T)
-      SOCEstimation_B.absCurrent_mA_p;
+    /* '<S8>:7:3' IntegratedCurrent = 0; */
+    SOCEstimation_B.IntegratedCurrent = 0.0F;
   }
 
-  /* End of Chart: '<S7>/Chart' */
+  /* End of Chart: '<S3>/IntegCurrent' */
 
-  /* Switch: '<S7>/Switch' incorporates:
-   *  Inport: '<Root>/CC_Inputs'
+  /* DataTypeConversion: '<S3>/Data Type Conversion3' incorporates:
+   *  Gain: '<S3>/Gain2'
+   *  Gain: '<S3>/Multiply2'
    */
-  if (SOCEstimation_U.CC_Inputs.LoopTimeSelector) {
-    /* Switch: '<S7>/Switch' */
-    SOCEstimation_B.Switch = SOCEstimation_B.DiscreteTimeIntegrator;
-  } else {
-    /* Gain: '<S7>/Gain1' */
-    SOCEstimation_B.IntegratedCurrent_a = SOCEstimation_P.Gain1_Gain_e *
-      SOCEstimation_B.IntegratedCurrent_h;
+  rtb_DataTypeConversion3 = (int32_T)floorf(0.001F *
+    SOCEstimation_B.IntegratedCurrent * 0.000277777785F);
 
-    /* Switch: '<S7>/Switch' */
-    SOCEstimation_B.Switch = SOCEstimation_B.IntegratedCurrent_a;
+  /* Switch: '<S6>/Switch' incorporates:
+   *  MATLAB Function: '<S6>/MATLAB Function'
+   *  Product: '<S6>/Product'
+   */
+  if (SOCEstimation_DW.counter > 7.0) {
+    rtb_Switch = (int32_T)floor((real_T)SOCEstimation_B.Effectiveusablecapacity *
+      SOCEstimation_B.sf_SOC_ReadFromEEPROM.TcompPersist);
+  } else {
+    rtb_Switch = SOCEstimation_B.Effectiveusablecapacity;
   }
 
-  /* End of Switch: '<S7>/Switch' */
+  /* End of Switch: '<S6>/Switch' */
 
-  /* Gain: '<S7>/Gain2' */
-  SOCEstimation_B.Gain2 = SOCEstimation_P.Gain2_Gain_k * SOCEstimation_B.Switch;
-
-  /* Product: '<S7>/Divide' incorporates:
+  /* Chart: '<S3>/SOC_Calibration' incorporates:
    *  Inport: '<Root>/CC_Inputs'
-   */
-  SOCEstimation_B.CycleCount = SOCEstimation_B.Gain2 / (real32_T)
-    SOCEstimation_U.CC_Inputs.EquivalentCycleCapacity_mAh;
-
-  /* Chart: '<S8>/SOH_Calibration' incorporates:
-   *  Inport: '<Root>/CC_Inputs'
+   *  Inport: '<Root>/CellBalancingOutput'
+   *  Inport: '<Root>/Current_mA'
    *  Inport: '<Root>/DataPipeline'
-   *  Inport: '<Root>/ProtectionOutput'
+   *  MATLAB Function: '<S6>/MATLAB Function'
+   *  Switch: '<S3>/Switch1'
+   *  Switch: '<S3>/Switch2'
+   *  Switch: '<S3>/Switch3'
    */
-  if (SOCEstimation_DW.is_active_c21_SOCEstimation == 0U) {
-    SOCEstimation_DW.is_active_c21_SOCEstimation = 1U;
-    SOCEstimation_DW.durationCounter_2_m = 0U;
-    SOCEstimation_DW.durationCounter_1_p = 0U;
-    SOCEstimation_DW.is_c21_SOCEstimation = SOCEstimatio_IN_TestBench_Entry;
+  /* Gateway: SOCEstimation/SOC_Calc/SOC_Calibration */
+  if (SOCEstimation_DW.temporalCounter_i1 < MAX_uint32_T) {
+    SOCEstimation_DW.temporalCounter_i1++;
+  }
 
-    /* Outport: '<Root>/SOHCalibrationCycleCompletion' */
-    SOCEstimation_Y.SOHCalibrationCycleCompletion = 0.0;
+  /* During: SOCEstimation/SOC_Calc/SOC_Calibration */
+  if (SOCEstimation_DW.is_active_c15_SOCEstimation == 0U) {
+    /* Entry: SOCEstimation/SOC_Calc/SOC_Calibration */
+    SOCEstimation_DW.is_active_c15_SOCEstimation = 1U;
+
+    /* Entry Internal: SOCEstimation/SOC_Calc/SOC_Calibration */
+    /* Transition: '<S10>:24' */
+    SOCEstimation_DW.temporalCounter_i1 = 0U;
+    SOCEstimation_DW.is_c15_SOCEstimation = SOCEstimatio_IN_Vehicle_at_Rest;
+
+    /* Entry 'Vehicle_at_Rest': '<S10>:9' */
+    /* '<S10>:9:2' CC_State = CCState.Vehicle_at_Rest; */
+    SOCEstimation_DW.CCState_k = Vehicle_at_Rest;
   } else {
-    switch (SOCEstimation_DW.is_c21_SOCEstimation) {
-     case SOCEstimation_IN_Full_Charge:
-      if (SOCEstimation_U.DataPipeline.isChargeEn != 0) {
-        SOCEstimation_DW.durationCounter_2_k = 0U;
+    switch (SOCEstimation_DW.is_c15_SOCEstimation) {
+     case SOCEstimatio_IN_CoulombCounting:
+      SOCEstimation_DW.CCState_k = CoulombCounting;
+
+      /* During 'CoulombCounting': '<S10>:3' */
+      /* '<S10>:158:1' sf_internal_predicateOutput = duration((pseudoLatchFlag == true && fullChargeFlag == false)... */
+      /* '<S10>:158:2' ,msec) > DebouncingTimeout_msec; */
+      if ((!SOCEstimation_U.CC_Inputs.pseudoLatchFlag) ||
+          SOCEstimation_U.CC_Inputs.fullChargeFlag) {
+        SOCEstimation_DW.durationCounter_1 = 0U;
       }
 
-      if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_2_k * SOCEstimation_U.looptimeSoC)
-          >= SOCEstimation_U.CC_Inputs.SOHCalibrationTimeout_msec) {
-        SOCEstimation_B.CalcEnable = 1.0;
-        SOCEstimation_DW.durationCounter_2_jc = 0U;
-        SOCEstimation_DW.durationCounter_1_g = 0U;
-        SOCEstimation_DW.is_c21_SOCEstimation = SOCEstimation_IN_Int2;
+      if ((uint32_T)((int32_T)SOCEstimation_DW.durationCounter_1 * SOCEstimation_U.looptimeSoC) >
+          (uint16_T)SOCEstimation_U.CC_Inputs.DebouncingTimeout_msec) {
+        /* Transition: '<S10>:158' */
+        SOCEstimation_DW.durationCounter_1_c = 0U;
+        SOCEstimation_DW.temporalCounter_i1 = 0U;
+        SOCEstimation_DW.is_c15_SOCEstimation = SOCEstimation_IN_PseudoLatching;
+
+        /* Entry 'PseudoLatching': '<S10>:153' */
+        /* '<S10>:153:3' CC_State = CCState.PseudoLatching; */
+        SOCEstimation_DW.CCState_k = PseudoLatching;
       } else {
-        b_hoisted_cond = ((SOCEstimation_U.DataPipeline.isChargeEn == 0) &&
-                          (SOCEstimation_U.ProtectionOutput.OV != Error));
-        if (!b_hoisted_cond) {
-          SOCEstimation_DW.durationCounter_1_px = 0U;
+        /* '<S10>:78:1' sf_internal_predicateOutput = duration(latchMake == true, msec) >DebouncingTimeout_msec; */
+        if (!SOCEstimation_DW.latchMake) {
+          SOCEstimation_DW.durationCounter_2 = 0U;
         }
 
-        if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_1_px *
-                               100) >=
-            SOCEstimation_U.CC_Inputs.SOHCalibrationTimeout_msec) {
-          SOCEstimation_B.CalcEnable = 0.0;
-          SOCEstimation_DW.durationCounter_2_m = 0U;
-          SOCEstimation_DW.durationCounter_1_p = 0U;
-          SOCEstimation_DW.is_c21_SOCEstimation =
-            SOCEstimatio_IN_TestBench_Entry;
+        if ((uint32_T)((int32_T)SOCEstimation_DW.durationCounter_2 * SOCEstimation_U.looptimeSoC) >
+            (uint16_T)SOCEstimation_U.CC_Inputs.DebouncingTimeout_msec) {
+          /* Transition: '<S10>:78' */
+          SOCEstimation_DW.temporalCounter_i1 = 0U;
+          SOCEstimation_DW.is_c15_SOCEstimation =
+            SOCEsti_IN_Recalibrate_Charging;
 
-          /* Outport: '<Root>/SOHCalibrationCycleCompletion' */
-          SOCEstimation_Y.SOHCalibrationCycleCompletion = 0.0;
+          /* Entry 'Recalibrate_Charging': '<S10>:6' */
+          /* '<S10>:6:3' CC_State = CCState.Recalibrate; */
+          SOCEstimation_DW.CCState_k = Recalibrate;
+
+          /* '<S10>:6:4' Initial_Capacity_mAh = int32(MaxUsableCapacity_mAh); */
+          SOCEstimation_Y.CC_Outputs.Initial_Capacity_mAh = rtb_Switch;
+
+          /* '<S10>:6:5' TotalCapacityRemains_mAh = Initial_Capacity_mAh; */
+          SOCEstimation_B.TotalCapacityRemains_mAh =
+            SOCEstimation_Y.CC_Outputs.Initial_Capacity_mAh;
+        } else {
+          /* '<S10>:3:5' TotalCapacityRemains_mAh = Initial_Capacity_mAh + IntegratedCurrent */
+          if ((SOCEstimation_Y.CC_Outputs.Initial_Capacity_mAh < 0) &&
+              (rtb_DataTypeConversion3 < MIN_int32_T
+               - SOCEstimation_Y.CC_Outputs.Initial_Capacity_mAh)) {
+            SOCEstimation_B.TotalCapacityRemains_mAh = MIN_int32_T;
+          } else if ((SOCEstimation_Y.CC_Outputs.Initial_Capacity_mAh > 0) &&
+                     (rtb_DataTypeConversion3 > MAX_int32_T
+                      - SOCEstimation_Y.CC_Outputs.Initial_Capacity_mAh)) {
+            SOCEstimation_B.TotalCapacityRemains_mAh = MAX_int32_T;
+          } else {
+            SOCEstimation_B.TotalCapacityRemains_mAh =
+              SOCEstimation_Y.CC_Outputs.Initial_Capacity_mAh +
+              rtb_DataTypeConversion3;
+          }
+
+          /* Switch: '<S3>/Switch2' incorporates:
+           *  Inport: '<Root>/DataPipeline'
+           *  Switch: '<S3>/Switch1'
+           *  Switch: '<S3>/Switch3'
+           */
+          /* '<S10>:3:6' [capLatch, calcSoH, latchMake] = calculate(DataPipeline.VoltageSenseBus.mV_max,... */
+          /* '<S10>:3:7'         DataPipeline.VoltageSenseBus.mV_min, Current_mA, MaxCurrentLimit_mA, MinCurrentLimit_mA,... */
+          /* '<S10>:3:8'         minVoltageForLatch, cycleCount, DataPipeline.VCU.isChargerConnected, fullChargeFlag ,pseudoLatchFlag,... */
+          /* '<S10>:3:9'         TotalCapacityRemains_mAh, CellBalancingOutput.MaxImbalance_mV, MaxAllowedImb_mV); */
+          if (SOCEstimation_U.DataPipeline.VCU.FastCharge) {
+            rtb_DataTypeConversion3 =
+              SOCEstimation_U.CC_Inputs.FastCharge.MaxCurrentLimit_mA;
+            tmp = SOCEstimation_U.CC_Inputs.FastCharge.MinCurrentLimit_mA;
+            tmp_0 = SOCEstimation_U.CC_Inputs.FastCharge.MaxAllowedImb_mV;
+          } else {
+            rtb_DataTypeConversion3 =
+              SOCEstimation_U.CC_Inputs.SlowCharge.MaxCurrentLimit_mA;
+            tmp = SOCEstimation_U.CC_Inputs.SlowCharge.MinCurrentLimit_mA;
+            tmp_0 = SOCEstimation_U.CC_Inputs.SlowCharge.MaxAllowedImb_mV;
+          }
+
+          SOCEstimation_calculate
+            (SOCEstimation_U.DataPipeline.VoltageSenseBus.mV_max,
+             SOCEstimation_U.DataPipeline.VoltageSenseBus.mV_min,
+             SOCEstimation_U.Current_mA, rtb_DataTypeConversion3, tmp,
+             SOCEstimation_U.CC_Inputs.minVoltageForLatch_mV,
+             SOCEstimation_U.CC_Inputs.CycleCountTo_SOH,
+             SOCEstimation_U.DataPipeline.VCU.isChargerConnected,
+             SOCEstimation_U.CC_Inputs.fullChargeFlag,
+             SOCEstimation_U.CC_Inputs.pseudoLatchFlag,
+             SOCEstimation_B.TotalCapacityRemains_mAh,
+             SOCEstimation_U.CellBalancingOutput.MaxImbalance_mV, tmp_0,
+             &SOCEstimation_B.capLatch, &SOCEstimation_B.calcSoH,
+             &SOCEstimation_DW.latchMake);
+          if (!SOCEstimation_DW.latchMake) {
+            SOCEstimation_DW.durationCounter_2 = 0U;
+          }
         }
       }
       break;
 
-     case SOCEstimation_IN_Full_Discharge:
-      if (SOCEstimation_U.DataPipeline.isChargeEn != 1) {
-        SOCEstimation_DW.durationCounter_2_j = 0U;
-      }
+     case SOCEstimation_IN_PseudoLatching:
+      SOCEstimation_DW.CCState_k = PseudoLatching;
 
-      if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_2_j * SOCEstimation_U.looptimeSoC)
-          >= SOCEstimation_U.CC_Inputs.SOHCalibrationTimeout_msec) {
-        SOCEstimation_B.CalcEnable = 1.0;
-        SOCEstimation_DW.durationCounter_2_m0 = 0U;
-        SOCEstimation_DW.durationCounter_1_dq = 0U;
-        SOCEstimation_DW.is_c21_SOCEstimation = SOCEstimation_IN_Int1;
+      /* During 'PseudoLatching': '<S10>:153' */
+      /* '<S10>:159:1' sf_internal_predicateOutput = (TotalCapacityRemains_mAh >= MaxUsableCapacity_mAh) && after(DebouncingTimeout_msec, msec); */
+      if ((SOCEstimation_B.TotalCapacityRemains_mAh >= rtb_Switch) && ((uint32_T)
+           ((int32_T)SOCEstimation_DW.temporalCounter_i1 * SOCEstimation_U.looptimeSoC) >= (uint16_T)
+           SOCEstimation_U.CC_Inputs.DebouncingTimeout_msec)) {
+        /* Transition: '<S10>:159' */
+        SOCEstimation_DW.temporalCounter_i1 = 0U;
+        SOCEstimation_DW.is_c15_SOCEstimation = SOCEsti_IN_Recalibrate_Charging;
+
+        /* Entry 'Recalibrate_Charging': '<S10>:6' */
+        /* '<S10>:6:3' CC_State = CCState.Recalibrate; */
+        SOCEstimation_DW.CCState_k = Recalibrate;
+
+        /* '<S10>:6:4' Initial_Capacity_mAh = int32(MaxUsableCapacity_mAh); */
+        SOCEstimation_Y.CC_Outputs.Initial_Capacity_mAh = rtb_Switch;
+
+        /* '<S10>:6:5' TotalCapacityRemains_mAh = Initial_Capacity_mAh; */
+        SOCEstimation_B.TotalCapacityRemains_mAh =
+          SOCEstimation_Y.CC_Outputs.Initial_Capacity_mAh;
       } else {
-        b_hoisted_cond = ((SOCEstimation_U.DataPipeline.isChargeEn == 1) &&
-                          (SOCEstimation_U.ProtectionOutput.UV != Error));
-        if (!b_hoisted_cond) {
-          SOCEstimation_DW.durationCounter_1_e = 0U;
+        /* '<S10>:206:1' sf_internal_predicateOutput = duration((pseudoLatchFlag == false && fullChargeFlag == false)... */
+        /* '<S10>:206:2' ,msec) > DebouncingTimeout_msec; */
+        if (SOCEstimation_U.CC_Inputs.pseudoLatchFlag ||
+            SOCEstimation_U.CC_Inputs.fullChargeFlag) {
+          SOCEstimation_DW.durationCounter_1_c = 0U;
         }
 
-        if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_1_e *
-                               100) >=
-            SOCEstimation_U.CC_Inputs.SOHCalibrationTimeout_msec) {
-          SOCEstimation_B.CalcEnable = 0.0;
-          SOCEstimation_DW.durationCounter_2_m = 0U;
-          SOCEstimation_DW.durationCounter_1_p = 0U;
-          SOCEstimation_DW.is_c21_SOCEstimation =
-            SOCEstimatio_IN_TestBench_Entry;
+        if ((uint32_T)((int32_T)SOCEstimation_DW.durationCounter_1_c * SOCEstimation_U.looptimeSoC) >
+            (uint16_T)SOCEstimation_U.CC_Inputs.DebouncingTimeout_msec) {
+          /* Transition: '<S10>:206' */
+          SOCEstimation_DW.durationCounter_2 = 0U;
+          SOCEstimation_DW.durationCounter_1 = 0U;
+          SOCEstimation_DW.is_c15_SOCEstimation =
+            SOCEstimatio_IN_CoulombCounting;
 
-          /* Outport: '<Root>/SOHCalibrationCycleCompletion' */
-          SOCEstimation_Y.SOHCalibrationCycleCompletion = 0.0;
+          /* Entry 'CoulombCounting': '<S10>:3' */
+          /* '<S10>:3:3' CC_State = CCState.CoulombCounting; */
+          SOCEstimation_DW.CCState_k = CoulombCounting;
+
+          /* '<S10>:153:5' TotalCapacityRemains_mAh = Initial_Capacity_mAh + IntegratedCurrent; */
+        } else if ((SOCEstimation_Y.CC_Outputs.Initial_Capacity_mAh < 0) &&
+                   (rtb_DataTypeConversion3 < MIN_int32_T
+                    - SOCEstimation_Y.CC_Outputs.Initial_Capacity_mAh)) {
+          SOCEstimation_B.TotalCapacityRemains_mAh = MIN_int32_T;
+        } else if ((SOCEstimation_Y.CC_Outputs.Initial_Capacity_mAh > 0) &&
+                   (rtb_DataTypeConversion3 > MAX_int32_T
+                    - SOCEstimation_Y.CC_Outputs.Initial_Capacity_mAh)) {
+          SOCEstimation_B.TotalCapacityRemains_mAh = MAX_int32_T;
+        } else {
+          SOCEstimation_B.TotalCapacityRemains_mAh =
+            SOCEstimation_Y.CC_Outputs.Initial_Capacity_mAh +
+            rtb_DataTypeConversion3;
         }
       }
       break;
 
-     case SOCEstimation_IN_Int1:
-      b_hoisted_cond = ((SOCEstimation_U.DataPipeline.isChargeEn == 0) &&
-                        (SOCEstimation_U.ProtectionOutput.OV == Error));
-      if (!b_hoisted_cond) {
-        SOCEstimation_DW.durationCounter_2_m0 = 0U;
-      }
+     case SOCEsti_IN_Recalibrate_Charging:
+      SOCEstimation_DW.CCState_k = Recalibrate;
 
-      if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_2_m0 *
-                             100) >=
-          SOCEstimation_U.CC_Inputs.SOHCalibrationTimeout_msec) {
-        SOCEstimation_B.CalcEnable = 1.0;
-        SOCEstimation_DW.durationCounter_2_k = 0U;
-        SOCEstimation_DW.durationCounter_1_px = 0U;
-        SOCEstimation_DW.is_c21_SOCEstimation = SOCEstimation_IN_Full_Charge;
-
-        /* Outport: '<Root>/SOHCalibrationCycleCompletion' */
-        SOCEstimation_Y.SOHCalibrationCycleCompletion += 0.5;
-      } else {
-        if (SOCEstimation_U.DataPipeline.isChargeEn != 0) {
-          SOCEstimation_DW.durationCounter_1_dq = 0U;
-        }
-
-        if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_1_dq *
-                               100) >=
-            SOCEstimation_U.CC_Inputs.SOHCalibrationTimeout_msec) {
-          SOCEstimation_B.CalcEnable = 0.0;
-          SOCEstimation_DW.durationCounter_2_m = 0U;
-          SOCEstimation_DW.durationCounter_1_p = 0U;
-          SOCEstimation_DW.is_c21_SOCEstimation =
-            SOCEstimatio_IN_TestBench_Entry;
-
-          /* Outport: '<Root>/SOHCalibrationCycleCompletion' */
-          SOCEstimation_Y.SOHCalibrationCycleCompletion = 0.0;
-        }
-      }
-      break;
-
-     case SOCEstimation_IN_Int2:
-      if (SOCEstimation_U.DataPipeline.isChargeEn != 1) {
-        SOCEstimation_DW.durationCounter_1_g = 0U;
-      }
-
-      if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_1_g * SOCEstimation_U.looptimeSoC)
-          >= SOCEstimation_U.CC_Inputs.SOHCalibrationTimeout_msec) {
-        SOCEstimation_B.CalcEnable = 0.0;
-        SOCEstimation_DW.durationCounter_2_m = 0U;
-        SOCEstimation_DW.durationCounter_1_p = 0U;
-        SOCEstimation_DW.is_c21_SOCEstimation = SOCEstimatio_IN_TestBench_Entry;
-
-        /* Outport: '<Root>/SOHCalibrationCycleCompletion' */
-        SOCEstimation_Y.SOHCalibrationCycleCompletion = 0.0;
-      } else {
-        b_hoisted_cond = ((SOCEstimation_U.DataPipeline.isChargeEn == 0) &&
-                          (SOCEstimation_U.ProtectionOutput.UV == Error));
-        if (!b_hoisted_cond) {
-          SOCEstimation_DW.durationCounter_2_jc = 0U;
-        }
-
-        if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_2_jc *
-                               100) >=
-            SOCEstimation_U.CC_Inputs.SOHCalibrationTimeout_msec) {
-          SOCEstimation_B.CalcEnable = 1.0;
-          SOCEstimation_DW.durationCounter_2_j = 0U;
-          SOCEstimation_DW.durationCounter_1_e = 0U;
-          SOCEstimation_DW.is_c21_SOCEstimation =
-            SOCEstimation_IN_Full_Discharge;
-
-          /* Outport: '<Root>/SOHCalibrationCycleCompletion' */
-          SOCEstimation_Y.SOHCalibrationCycleCompletion += 0.5;
-        }
-      }
-      break;
-
-     case SOCEstimation_IN_Int3:
-      if (SOCEstimation_U.ProtectionOutput.OV != Error) {
+      /* During 'Recalibrate_Charging': '<S10>:6' */
+      /* '<S10>:28:1' sf_internal_predicateOutput = after(CC_Inputs.CCTimeout_msec, msec); */
+      if ((uint32_T)((int32_T)SOCEstimation_DW.temporalCounter_i1 * SOCEstimation_U.looptimeSoC) >=
+          (uint16_T)SOCEstimation_U.CC_Inputs.CCTimeout_msec) {
+        /* Transition: '<S10>:28' */
+        /* '<S10>:28:2' latchMake = false; */
+        SOCEstimation_DW.latchMake = false;
         SOCEstimation_DW.durationCounter_2 = 0U;
-      }
+        SOCEstimation_DW.durationCounter_1 = 0U;
+        SOCEstimation_DW.is_c15_SOCEstimation = SOCEstimatio_IN_CoulombCounting;
 
-      if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_2 * SOCEstimation_U.looptimeSoC) >=
-          SOCEstimation_U.CC_Inputs.SOHCalibrationTimeout_msec) {
-        SOCEstimation_B.CalcEnable = 1.0;
-        SOCEstimation_DW.durationCounter_2_k = 0U;
-        SOCEstimation_DW.durationCounter_1_px = 0U;
-        SOCEstimation_DW.is_c21_SOCEstimation = SOCEstimation_IN_Full_Charge;
-
-        /* Outport: '<Root>/SOHCalibrationCycleCompletion' */
-        SOCEstimation_Y.SOHCalibrationCycleCompletion += 0.5;
-      } else {
-        if (SOCEstimation_U.DataPipeline.isChargeEn != 0) {
-          SOCEstimation_DW.durationCounter_1_d = 0U;
-        }
-
-        if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_1_d *
-                               100) >=
-            SOCEstimation_U.CC_Inputs.SOHCalibrationTimeout_msec) {
-          SOCEstimation_B.CalcEnable = 0.0;
-          SOCEstimation_DW.durationCounter_2_m = 0U;
-          SOCEstimation_DW.durationCounter_1_p = 0U;
-          SOCEstimation_DW.is_c21_SOCEstimation =
-            SOCEstimatio_IN_TestBench_Entry;
-
-          /* Outport: '<Root>/SOHCalibrationCycleCompletion' */
-          SOCEstimation_Y.SOHCalibrationCycleCompletion = 0.0;
-        }
-      }
-      break;
-
-     case SOCEstimation_IN_Int4:
-      if (SOCEstimation_U.ProtectionOutput.UV != Error) {
-        SOCEstimation_DW.durationCounter_2_b = 0U;
-      }
-
-      if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_2_b * SOCEstimation_U.looptimeSoC)
-          >= SOCEstimation_U.CC_Inputs.SOHCalibrationTimeout_msec) {
-        SOCEstimation_B.CalcEnable = 1.0;
-        SOCEstimation_DW.durationCounter_2_j = 0U;
-        SOCEstimation_DW.durationCounter_1_e = 0U;
-        SOCEstimation_DW.is_c21_SOCEstimation = SOCEstimation_IN_Full_Discharge;
-
-        /* Outport: '<Root>/SOHCalibrationCycleCompletion' */
-        SOCEstimation_Y.SOHCalibrationCycleCompletion += 0.5;
-      } else {
-        if (SOCEstimation_U.DataPipeline.isChargeEn != 1) {
-          SOCEstimation_DW.durationCounter_1_m = 0U;
-        }
-
-        if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_1_m *
-                               100) >=
-            SOCEstimation_U.CC_Inputs.SOHCalibrationTimeout_msec) {
-          SOCEstimation_B.CalcEnable = 0.0;
-          SOCEstimation_DW.durationCounter_2_m = 0U;
-          SOCEstimation_DW.durationCounter_1_p = 0U;
-          SOCEstimation_DW.is_c21_SOCEstimation =
-            SOCEstimatio_IN_TestBench_Entry;
-
-          /* Outport: '<Root>/SOHCalibrationCycleCompletion' */
-          SOCEstimation_Y.SOHCalibrationCycleCompletion = 0.0;
-        }
+        /* Entry 'CoulombCounting': '<S10>:3' */
+        /* '<S10>:3:3' CC_State = CCState.CoulombCounting; */
+        SOCEstimation_DW.CCState_k = CoulombCounting;
       }
       break;
 
      default:
-      /* case IN_TestBench_Entry: */
-      if (SOCEstimation_U.DataPipeline.isChargeEn != 0) {
-        SOCEstimation_DW.durationCounter_2_m = 0U;
-      }
+      SOCEstimation_DW.CCState_k = Vehicle_at_Rest;
 
-      if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_2_m * SOCEstimation_U.looptimeSoC)
-          >= SOCEstimation_U.CC_Inputs.SOHCalibrationTimeout_msec) {
-        SOCEstimation_B.CalcEnable = 1.0;
-        SOCEstimation_DW.durationCounter_2_b = 0U;
-        SOCEstimation_DW.durationCounter_1_m = 0U;
-        SOCEstimation_DW.is_c21_SOCEstimation = SOCEstimation_IN_Int4;
+      /* During 'Vehicle_at_Rest': '<S10>:9' */
+      /* '<S10>:19:1' sf_internal_predicateOutput = (SynchCounter > 7) &&... */
+      /* '<S10>:19:2'  after(CC_Inputs.CCTimeout_msec, msec); */
+      if ((SOCEstimation_DW.counter > 7.0) && ((uint32_T)((int32_T)
+            SOCEstimation_DW.temporalCounter_i1 * SOCEstimation_U.looptimeSoC) >= (uint16_T)
+           SOCEstimation_U.CC_Inputs.CCTimeout_msec)) {
+        /* Transition: '<S10>:19' */
+        SOCEstimation_DW.durationCounter_2 = 0U;
+        SOCEstimation_DW.durationCounter_1 = 0U;
+        SOCEstimation_DW.is_c15_SOCEstimation = SOCEstimatio_IN_CoulombCounting;
+
+        /* Entry 'CoulombCounting': '<S10>:3' */
+        /* '<S10>:3:3' CC_State = CCState.CoulombCounting; */
+        SOCEstimation_DW.CCState_k = CoulombCounting;
       } else {
-        if (SOCEstimation_U.DataPipeline.isChargeEn != 1) {
-          SOCEstimation_DW.durationCounter_1_p = 0U;
+        /* Switch: '<S11>/Switch2' incorporates:
+         *  RelationalOperator: '<S11>/LowerRelop1'
+         *  RelationalOperator: '<S11>/UpperRelop'
+         *  Switch: '<S11>/Switch'
+         */
+        /* '<S10>:9:4' Initial_Capacity_mAh = int32(Initial_Guess_mAh); */
+        if (SOCEstimation_B.sf_SOC_ReadFromEEPROM.CapacityRemains_mAh >
+            rtb_Switch) {
+          SOCEstimation_Y.CC_Outputs.Initial_Capacity_mAh = rtb_Switch;
+        } else if (SOCEstimation_B.sf_SOC_ReadFromEEPROM.CapacityRemains_mAh < 0)
+        {
+          /* Switch: '<S11>/Switch' incorporates:
+           *  Constant: '<S3>/Constant2'
+           */
+          SOCEstimation_Y.CC_Outputs.Initial_Capacity_mAh = 0;
+        } else {
+          SOCEstimation_Y.CC_Outputs.Initial_Capacity_mAh =
+            SOCEstimation_B.sf_SOC_ReadFromEEPROM.CapacityRemains_mAh;
         }
 
-        if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_1_p *
-                               100) >=
-            SOCEstimation_U.CC_Inputs.SOHCalibrationTimeout_msec) {
-          SOCEstimation_B.CalcEnable = 1.0;
-          SOCEstimation_DW.durationCounter_2 = 0U;
-          SOCEstimation_DW.durationCounter_1_d = 0U;
-          SOCEstimation_DW.is_c21_SOCEstimation = SOCEstimation_IN_Int3;
-        }
+        /* End of Switch: '<S11>/Switch2' */
+        /* '<S10>:9:5' TotalCapacityRemains_mAh = Initial_Capacity_mAh */
+        SOCEstimation_B.TotalCapacityRemains_mAh =
+          SOCEstimation_Y.CC_Outputs.Initial_Capacity_mAh;
       }
       break;
     }
   }
 
-  if (SOCEstimation_U.DataPipeline.isChargeEn == 0) {
-    SOCEstimation_DW.durationCounter_1_d++;
+  tmp_1 = !SOCEstimation_U.CC_Inputs.fullChargeFlag;
+  if (SOCEstimation_U.CC_Inputs.pseudoLatchFlag && tmp_1) {
+    SOCEstimation_DW.durationCounter_1++;
   } else {
-    SOCEstimation_DW.durationCounter_1_d = 0U;
+    SOCEstimation_DW.durationCounter_1 = 0U;
   }
 
-  if (SOCEstimation_U.ProtectionOutput.OV == Error) {
+  if ((!SOCEstimation_U.CC_Inputs.pseudoLatchFlag) && tmp_1) {
+    SOCEstimation_DW.durationCounter_1_c++;
+  } else {
+    SOCEstimation_DW.durationCounter_1_c = 0U;
+  }
+
+  if (SOCEstimation_DW.latchMake) {
     SOCEstimation_DW.durationCounter_2++;
   } else {
     SOCEstimation_DW.durationCounter_2 = 0U;
   }
 
-  if (SOCEstimation_U.DataPipeline.isChargeEn == 1) {
-    SOCEstimation_DW.durationCounter_1_p++;
-  } else {
-    SOCEstimation_DW.durationCounter_1_p = 0U;
-  }
-
-  b_hoisted_cond = ((SOCEstimation_U.DataPipeline.isChargeEn == 0) &&
-                    (SOCEstimation_U.ProtectionOutput.OV != Error));
-  if (b_hoisted_cond) {
-    SOCEstimation_DW.durationCounter_1_px++;
-  } else {
-    SOCEstimation_DW.durationCounter_1_px = 0U;
-  }
-
-  if (SOCEstimation_U.DataPipeline.isChargeEn == 0) {
-    SOCEstimation_DW.durationCounter_2_m++;
-  } else {
-    SOCEstimation_DW.durationCounter_2_m = 0U;
-  }
-
-  if (SOCEstimation_U.DataPipeline.isChargeEn == 1) {
-    SOCEstimation_DW.durationCounter_1_m++;
-  } else {
-    SOCEstimation_DW.durationCounter_1_m = 0U;
-  }
-
-  b_hoisted_cond = ((SOCEstimation_U.DataPipeline.isChargeEn == 1) &&
-                    (SOCEstimation_U.ProtectionOutput.UV != Error));
-  if (b_hoisted_cond) {
-    SOCEstimation_DW.durationCounter_1_e++;
-  } else {
-    SOCEstimation_DW.durationCounter_1_e = 0U;
-  }
-
-  if (SOCEstimation_U.DataPipeline.isChargeEn == 1) {
-    SOCEstimation_DW.durationCounter_1_g++;
-  } else {
-    SOCEstimation_DW.durationCounter_1_g = 0U;
-  }
-
-  if (SOCEstimation_U.DataPipeline.isChargeEn == 0) {
-    SOCEstimation_DW.durationCounter_1_dq++;
-  } else {
-    SOCEstimation_DW.durationCounter_1_dq = 0U;
-  }
-
-  b_hoisted_cond = ((SOCEstimation_U.DataPipeline.isChargeEn == 0) &&
-                    (SOCEstimation_U.ProtectionOutput.OV == Error));
-  if (b_hoisted_cond) {
-    SOCEstimation_DW.durationCounter_2_m0++;
-  } else {
-    SOCEstimation_DW.durationCounter_2_m0 = 0U;
-  }
-
-  if (SOCEstimation_U.DataPipeline.isChargeEn == 0) {
-    SOCEstimation_DW.durationCounter_2_k++;
-  } else {
-    SOCEstimation_DW.durationCounter_2_k = 0U;
-  }
-
-  if (SOCEstimation_U.ProtectionOutput.UV == Error) {
-    SOCEstimation_DW.durationCounter_2_b++;
-  } else {
-    SOCEstimation_DW.durationCounter_2_b = 0U;
-  }
-
-  if (SOCEstimation_U.DataPipeline.isChargeEn == 1) {
-    SOCEstimation_DW.durationCounter_2_j++;
-  } else {
-    SOCEstimation_DW.durationCounter_2_j = 0U;
-  }
-
-  b_hoisted_cond = ((SOCEstimation_U.DataPipeline.isChargeEn == 0) &&
-                    (SOCEstimation_U.ProtectionOutput.UV == Error));
-  if (b_hoisted_cond) {
-    SOCEstimation_DW.durationCounter_2_jc++;
-  } else {
-    SOCEstimation_DW.durationCounter_2_jc = 0U;
-  }
-
-  /* End of Chart: '<S8>/SOH_Calibration' */
-
-  /* Outputs for Enabled SubSystem: '<S8>/Subsystem' incorporates:
-   *  EnablePort: '<S18>/Enable'
-   */
-  if (SOCEstimation_B.CalcEnable > 0.0) {
-    /* Abs: '<S18>/Abs' incorporates:
-     *  Inport: '<Root>/Current_mA'
-     */
-    u = SOCEstimation_U.Current_mA;
-    if (u < 0) {
-      /* Abs: '<S18>/Abs' */
-      SOCEstimation_B.absCurrent_mA_i = -u;
-    } else {
-      /* Abs: '<S18>/Abs' */
-      SOCEstimation_B.absCurrent_mA_i = u;
-    }
-
-    /* End of Abs: '<S18>/Abs' */
-
-    /* Chart: '<S18>/Chart' incorporates:
-     *  Inport: '<Root>/CC_Inputs'
-     *  Inport: '<Root>/DataPipeline'
-     *  Outport: '<Root>/SOHCalibrationCycleCompletion'
-     */
-    if (SOCEstimation_DW.is_active_c22_SOCEstimation == 0U) {
-      SOCEstimation_DW.is_active_c22_SOCEstimation = 1U;
-      SOCEstimation_DW.durationCounter_1 = 0U;
-      SOCEstimation_DW.is_c22_SOCEstimation = SOCEstimat_IN_IntegratedCurrent;
-    } else if (SOCEstimation_DW.is_c22_SOCEstimation ==
-               SOCEstimat_IN_IntegratedCurrent) {
-      if (!(SOCEstimation_Y.SOHCalibrationCycleCompletion == 1.0)) {
-        SOCEstimation_DW.durationCounter_1 = 0U;
-      }
-
-      if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_1 * SOCEstimation_U.looptimeSoC) >=
-          SOCEstimation_U.CC_Inputs.SOHCalibrationTimeout_msec) {
-        SOCEstimation_DW.durationCounter_1_i = 0U;
-        SOCEstimation_DW.is_c22_SOCEstimation = SOCE_IN_Reset_IntegratedCurrent;
-        SOCEstimation_B.Final_IntegratedCurrent =
-          SOCEstimation_DW.IntegratedCurrent;
-      } else {
-        SOCEstimation_DW.IntegratedCurrent +=
-          SOCEstimation_U.DataPipeline.LoopTimer_SOC_msec * (real32_T)
-          SOCEstimation_B.absCurrent_mA_i;
-      }
-    } else {
-      /* case IN_Reset_IntegratedCurrent: */
-      if (!(SOCEstimation_Y.SOHCalibrationCycleCompletion == 0.0)) {
-        SOCEstimation_DW.durationCounter_1_i = 0U;
-      }
-
-      if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_1_i * SOCEstimation_U.looptimeSoC)
-          >= SOCEstimation_U.CC_Inputs.SOHCalibrationTimeout_msec) {
-        SOCEstimation_DW.IntegratedCurrent = 0.0F;
-        SOCEstimation_DW.durationCounter_1 = 0U;
-        SOCEstimation_DW.is_c22_SOCEstimation = SOCEstimat_IN_IntegratedCurrent;
-      }
-    }
-
-    if (SOCEstimation_Y.SOHCalibrationCycleCompletion == 1.0) {
-      SOCEstimation_DW.durationCounter_1++;
-    } else {
-      SOCEstimation_DW.durationCounter_1 = 0U;
-    }
-
-    if (SOCEstimation_Y.SOHCalibrationCycleCompletion == 0.0) {
-      SOCEstimation_DW.durationCounter_1_i++;
-    } else {
-      SOCEstimation_DW.durationCounter_1_i = 0U;
-    }
-
-    /* End of Chart: '<S18>/Chart' */
-
-    /* Gain: '<S18>/Gain1' */
-    SOCEstimation_B.Gain1 = SOCEstimation_P.Gain1_Gain_g *
-      SOCEstimation_B.Final_IntegratedCurrent;
-
-    /* Gain: '<S18>/Gain2' */
-    SOCEstimation_B.CapacityExchange_mAh = SOCEstimation_P.Gain2_Gain_o *
-      SOCEstimation_B.Gain1;
-
-    /* Product: '<S18>/Divide' incorporates:
-     *  Inport: '<Root>/CC_Inputs'
-     */
-    SOCEstimation_B.InitialCycleCount = SOCEstimation_B.CapacityExchange_mAh /
-      (real32_T)SOCEstimation_U.CC_Inputs.EquivalentCycleCapacity_mAh;
-
-    /* MATLAB Function: '<S18>/UsableCapacity_mAh' incorporates:
-     *  Inport: '<Root>/CC_Inputs'
-     */
-    SOCEstimat_UsableCapacity_mAh_m(SOCEstimation_B.InitialCycleCount,
-      SOCEstimation_U.CC_Inputs.InstalledCapacity_mAh,
-      SOCEstimation_U.CC_Inputs.SOH_Vs_Capacity_Gain,
-      SOCEstimation_U.CC_Inputs.SOH_Vs_Capacity_Offset,
-      &SOCEstimation_B.sf_UsableCapacity_mAh_m);
-
-    /* Product: '<S18>/Divide1' incorporates:
-     *  Inport: '<Root>/CC_Inputs'
-     */
-    SOCEstimation_B.InitialSOH = (real32_T)
-      SOCEstimation_B.sf_UsableCapacity_mAh_m.MaxUsableCapacity_mAh / (real32_T)
-      SOCEstimation_U.CC_Inputs.InstalledCapacity_mAh;
-
-    /* Gain: '<S18>/Gain' */
-    SOCEstimation_B.InitialSOH_cpct = (int32_T)floorf(SOCEstimation_P.Gain_Gain *
-      SOCEstimation_B.InitialSOH);
-
-    /* Product: '<S18>/Product' incorporates:
-     *  Inport: '<Root>/CC_Inputs'
-     */
-    SOCEstimation_B.Product = SOCEstimation_U.CC_Inputs.InstalledCapacity_mAh *
-      SOCEstimation_B.InitialSOH_cpct;
-
-    /* Gain: '<S18>/Gain3' */
-    SOCEstimation_B.Gain3 = (real32_T)SOCEstimation_P.Gain3_Gain *
-      5.68434189E-14F * (real32_T)SOCEstimation_B.Product;
-
-    /* DataTypeConversion: '<S18>/Data Type Conversion' */
-    SOCEstimation_B.DataTypeConversion_f = (int32_T)floorf(SOCEstimation_B.Gain3);
-  }
-
-  /* End of Outputs for SubSystem: '<S8>/Subsystem' */
-
-  /* Chart: '<S1>/Chart' incorporates:
-   *  Inport: '<Root>/CC_Inputs'
-   *  Outport: '<Root>/SOHCalibrationCycleCompletion'
-   */
-  if (SOCEstimation_DW.is_active_c25_SOCEstimation == 0U) {
-    SOCEstimation_DW.is_active_c25_SOCEstimation = 1U;
-    SOCEstimation_DW.durationCounter_1_k = 0U;
-    SOCEstimation_DW.is_c25_SOCEstimation = SOCEstimation_IN_Lobby;
-    SOCEstimation_B.Final_InstalledCapacity_mAh =
-      SOCEstimation_U.CC_Inputs.InstalledCapacity_mAh;
-  } else if (SOCEstimation_DW.is_c25_SOCEstimation ==
-             SOCEstim_IN_FirstCycleCompleted) {
-    if (!SOCEstimation_U.CC_Inputs.SOHCalibrationOn) {
-      SOCEstimation_DW.durationCounter_1_k = 0U;
-      SOCEstimation_DW.is_c25_SOCEstimation = SOCEstimation_IN_Lobby;
-      SOCEstimation_B.Final_InstalledCapacity_mAh =
-        SOCEstimation_U.CC_Inputs.InstalledCapacity_mAh;
-    }
-  } else {
-    /* case IN_Lobby: */
-    b_hoisted_cond = (SOCEstimation_U.CC_Inputs.SOHCalibrationOn &&
-                      (SOCEstimation_Y.SOHCalibrationCycleCompletion == 1.0));
-    if (!b_hoisted_cond) {
-      SOCEstimation_DW.durationCounter_1_k = 0U;
-    }
-
-    if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_1_k * SOCEstimation_U.looptimeSoC) >
-        SOCEstimation_U.CC_Inputs.DebouncingTimeout_msec) {
-      SOCEstimation_DW.is_c25_SOCEstimation = SOCEstim_IN_FirstCycleCompleted;
-      SOCEstimation_B.Final_InstalledCapacity_mAh =
-        SOCEstimation_B.DataTypeConversion_f;
-    }
-  }
-
-  b_hoisted_cond = (SOCEstimation_U.CC_Inputs.SOHCalibrationOn &&
-                    (SOCEstimation_Y.SOHCalibrationCycleCompletion == 1.0));
-  if (b_hoisted_cond) {
-    SOCEstimation_DW.durationCounter_1_k++;
-  } else {
-    SOCEstimation_DW.durationCounter_1_k = 0U;
-  }
-
-  /* End of Chart: '<S1>/Chart' */
-
-  /* MATLAB Function: '<S7>/UsableCapacity_mAh' incorporates:
-   *  Inport: '<Root>/CC_Inputs'
-   */
-  SOCEstimatio_UsableCapacity_mAh(SOCEstimation_B.CycleCount,
-    SOCEstimation_U.CC_Inputs.SOH_Vs_Capacity_Gain,
-    SOCEstimation_U.CC_Inputs.SOH_Vs_Capacity_Offset,
-    SOCEstimation_B.Final_InstalledCapacity_mAh,
-    &SOCEstimation_B.sf_UsableCapacity_mAh);
-
-  /* MATLAB Function: '<S1>/Voltage_Vs_Capacity' incorporates:
-   *  Inport: '<Root>/Voltage_mV'
-   */
-  VoltagemV_Vs_CapacitymAh(SOCEstimation_U.Voltage_mV,
-    &SOCEstimation_B.sf_Voltage_Vs_Capacity);
-
-  /* MATLAB Function: '<S1>/SOC_ReadFromFlash' */
-  SOCEstimation_SOC_ReadFromFlash(&SOCEstimation_B.sf_SOC_ReadFromFlash);
-
-  /* Switch: '<S1>/Switch' incorporates:
-   *  Inport: '<Root>/CC_Inputs'
-   */
-  if (SOCEstimation_U.CC_Inputs.InitialCapacity_Guess) {
-    /* Switch: '<S1>/Switch' */
-    SOCEstimation_B.Initial_Guess_mAh =
-      SOCEstimation_B.sf_Voltage_Vs_Capacity.Capacity_mAh;
-  } else {
-    /* Switch: '<S1>/Switch' */
-    SOCEstimation_B.Initial_Guess_mAh = (uint32_T)
-      SOCEstimation_B.sf_SOC_ReadFromFlash.CapacityRemains_mAh;
-  }
-
-  /* End of Switch: '<S1>/Switch' */
-
-  /* DataTypeConversion: '<S1>/Data Type Conversion' */
-  SOCEstimation_B.DataTypeConversion = (int32_T)
-    SOCEstimation_B.Initial_Guess_mAh;
-
-  /* DataStoreRead: '<S1>/Data Store Read' */
-  SOCEstimation_B.Capacity_mAh = SOCEstimation_DW.CapacityRemains_mAh;
-
-  /* Switch: '<S4>/Switch1' incorporates:
-   *  Inport: '<Root>/DataPipeline'
-   *  Switch: '<S4>/Switch2'
-   */
-  if (SOCEstimation_U.DataPipeline.VCU.FastCharge) {
-    /* Switch: '<S4>/Switch1' incorporates:
-     *  Inport: '<Root>/CC_Inputs'
-     */
-    SOCEstimation_B.MaxAllowedImb_mV =
-      SOCEstimation_U.CC_Inputs.FastCharge.MaxAllowedImb_mV;
-
-    /* Switch: '<S4>/Switch2' incorporates:
-     *  Inport: '<Root>/CC_Inputs'
-     */
-    SOCEstimation_B.MaxCurrentLimit_mA =
-      SOCEstimation_U.CC_Inputs.FastCharge.MaxCurrentLimit_mA;
-  } else {
-    /* Switch: '<S4>/Switch1' incorporates:
-     *  Inport: '<Root>/CC_Inputs'
-     */
-    SOCEstimation_B.MaxAllowedImb_mV =
-      SOCEstimation_U.CC_Inputs.SlowCharge.MaxAllowedImb_mV;
-
-    /* Switch: '<S4>/Switch2' incorporates:
-     *  Inport: '<Root>/CC_Inputs'
-     */
-    SOCEstimation_B.MaxCurrentLimit_mA =
-      SOCEstimation_U.CC_Inputs.SlowCharge.MaxCurrentLimit_mA;
-  }
-
-  /* End of Switch: '<S4>/Switch1' */
-
-  /* Chart: '<S4>/SOC_Calibration' incorporates:
-   *  Inport: '<Root>/CC_Inputs'
-   *  Inport: '<Root>/CellBalancingOutput'
-   *  Inport: '<Root>/Current_mA'
-   *  Inport: '<Root>/DataPipeline'
-   *  Inport: '<Root>/triggerLatchPseudo'
-   */
-  if (SOCEstimation_DW.temporalCounter_i1 < MAX_uint32_T) {
-    SOCEstimation_DW.temporalCounter_i1++;
-  }
-
-  if (SOCEstimation_DW.is_active_c15_SOCEstimation == 0U) {
-    SOCEstimation_DW.is_active_c15_SOCEstimation = 1U;
-    SOCEstimation_DW.is_c15_SOCEstimation = SOCEstimatio_IN_Vehicle_at_Rest;
-    SOCEstimation_DW.temporalCounter_i1 = 0U;
-    SOCEstimation_B.CC_State = Vehicle_at_Rest;
-    SOCEstimation_B.Initial_Capacity_mAh = SOCEstimation_B.DataTypeConversion;
-    SOCEstimation_DW.TransitionCapacity_mAh =
-      SOCEstimation_B.Initial_Capacity_mAh;
-  } else {
-    switch (SOCEstimation_DW.is_c15_SOCEstimation) {
-     case SOCEstimatio_IN_CoulombCounting:
-      SOCEstimation_B.CC_State = CoulombCounting;
-      if (SOCEstimation_U.DataPipeline.VoltageSenseBus.mV_min >=
-          SOCEstimation_U.CC_Inputs.minVoltageForLatch_mV) {
-        if (SOCEstimation_U.Current_mA < 0) {
-          u = SOCEstimation_U.Current_mA;
-          if (u <= MIN_int32_T) {
-            u = MAX_int32_T;
-          } else {
-            u = -u;
-          }
-        } else {
-          u = SOCEstimation_U.Current_mA;
-        }
-
-        if (u < SOCEstimation_B.MaxCurrentLimit_mA) {
-          if (SOCEstimation_U.Current_mA < 0) {
-            u = SOCEstimation_U.Current_mA;
-            if (u <= MIN_int32_T) {
-              u = MAX_int32_T;
-            } else {
-              u = -u;
-            }
-          } else {
-            u = SOCEstimation_U.Current_mA;
-          }
-
-          if (u > SOCEstimation_B.MinCurrentLimit_mA) {
-          } else {
-            SOCEstimation_DW.durationCounter_1_l = 0U;
-          }
-        } else {
-          SOCEstimation_DW.durationCounter_1_l = 0U;
-        }
-      } else {
-        SOCEstimation_DW.durationCounter_1_l = 0U;
-      }
-
-      b_hoisted_cond = ((((real_T)(uint32_T)((int32_T)
-        SOCEstimation_DW.durationCounter_1_l * SOCEstimation_U.looptimeSoC) >
-                          SOCEstimation_U.CC_Inputs.DebouncingTimeout_msec) &&
-                         SOCEstimation_U.DataPipeline.VCU.isChargerConnected &&
-                         (SOCEstimation_U.CellBalancingOutput.MaxImbalance_mV <
-                          SOCEstimation_B.MaxAllowedImb_mV)) ||
-                        (SOCEstimation_U.triggerLatchPseudo == 1.0));
-      if (b_hoisted_cond) {
-        SOCEstimation_DW.is_c15_SOCEstimation = SOCEsti_IN_Recalibrate_Charging;
-        SOCEstimation_DW.temporalCounter_i1 = 0U;
-        SOCEstimation_B.CC_State = Recalibrate;
-        SOCEstimation_B.Initial_Capacity_mAh =
-          SOCEstimation_B.sf_UsableCapacity_mAh.MaxUsableCapacity_mAh;
-        SOCEstimation_DW.TransitionCapacity_mAh =
-          SOCEstimation_B.Initial_Capacity_mAh;
-      }
-      break;
-
-     case SOCEsti_IN_Recalibrate_Charging:
-      SOCEstimation_B.CC_State = Recalibrate;
-      if ((uint32_T)((int32_T)SOCEstimation_DW.temporalCounter_i1 * 100) >=
-          (uint32_T)SOCEstimation_U.CC_Inputs.CCTimeout_msec) {
-        SOCEstimation_DW.durationCounter_1_l = 0U;
-        SOCEstimation_DW.is_c15_SOCEstimation = SOCEstimatio_IN_CoulombCounting;
-        SOCEstimation_B.CC_State = CoulombCounting;
-        SOCEstimation_B.Initial_Capacity_mAh = SOCEstimation_B.Capacity_mAh;
-      }
-      break;
-
-     default:
-      /* case IN_Vehicle_at_Rest: */
-      SOCEstimation_B.CC_State = Vehicle_at_Rest;
-      if ((uint32_T)((int32_T)SOCEstimation_DW.temporalCounter_i1 * 100) >=
-          (uint32_T)SOCEstimation_U.CC_Inputs.CCTimeout_msec) {
-        SOCEstimation_DW.durationCounter_1_l = 0U;
-        SOCEstimation_DW.is_c15_SOCEstimation = SOCEstimatio_IN_CoulombCounting;
-        SOCEstimation_B.CC_State = CoulombCounting;
-        SOCEstimation_B.Initial_Capacity_mAh = SOCEstimation_B.Capacity_mAh;
-      }
-      break;
-    }
-  }
-
-  if (SOCEstimation_U.DataPipeline.VoltageSenseBus.mV_min >=
-      SOCEstimation_U.CC_Inputs.minVoltageForLatch_mV) {
-    if (SOCEstimation_U.Current_mA < 0) {
-      u = SOCEstimation_U.Current_mA;
-      if (u <= MIN_int32_T) {
-        u = MAX_int32_T;
-      } else {
-        u = -u;
-      }
-    } else {
-      u = SOCEstimation_U.Current_mA;
-    }
-
-    if (u < SOCEstimation_B.MaxCurrentLimit_mA) {
-      if (SOCEstimation_U.Current_mA < 0) {
-        u = SOCEstimation_U.Current_mA;
-        if (u <= MIN_int32_T) {
-          u = MAX_int32_T;
-        } else {
-          u = -u;
-        }
-      } else {
-        u = SOCEstimation_U.Current_mA;
-      }
-
-      if (u > SOCEstimation_B.MinCurrentLimit_mA) {
-        SOCEstimation_DW.durationCounter_1_l++;
-      } else {
-        SOCEstimation_DW.durationCounter_1_l = 0U;
-      }
-    } else {
-      SOCEstimation_DW.durationCounter_1_l = 0U;
-    }
-  } else {
-    SOCEstimation_DW.durationCounter_1_l = 0U;
-  }
-
-  /* End of Chart: '<S4>/SOC_Calibration' */
-
-  /* DataTypeConversion: '<S3>/Data Type Conversion1' */
-  SOCEstimation_B.DataTypeConversion1 = (real32_T)SOCEstimation_B.CC_State;
-
-  /* DiscreteIntegrator: '<S3>/Discrete-Time Integrator2' */
-  if ((SOCEstimation_B.DataTypeConversion1 > 0.0F) &&
-      (SOCEstimation_DW.DiscreteTimeIntegrator2_PrevRes <= 0)) {
-    SOCEstimation_DW.DiscreteTimeIntegrator2_DSTATE =
-      SOCEstimation_P.DiscreteTimeIntegrator2_IC;
-  }
-
-  /* DiscreteIntegrator: '<S3>/Discrete-Time Integrator2' */
-  SOCEstimation_B.IntegratedCurrent =
-    SOCEstimation_DW.DiscreteTimeIntegrator2_DSTATE;
-
-  /* Chart: '<S3>/Chart1' incorporates:
-   *  Inport: '<Root>/DataPipeline'
-   */
-  if (SOCEstimation_DW.is_active_c14_SOCEstimation == 0U) {
-    SOCEstimation_DW.is_active_c14_SOCEstimation = 1U;
-    SOCEstimation_DW.is_c14_SOCEstimation = SOCEstimat_IN_IntegratedCurrent;
-  } else if (SOCEstimation_DW.is_c14_SOCEstimation ==
-             SOCEstimat_IN_IntegratedCurrent) {
-    if (SOCEstimation_B.DataTypeConversion1 == 1.0F) {
-      SOCEstimation_DW.is_c14_SOCEstimation = SOCEstimatio_IN_IntegratorReset;
-    } else {
-      SOCEstimation_B.IntegratedCurrent_k +=
-        SOCEstimation_U.DataPipeline.LoopTimer_SOC_msec *
-        SOCEstimation_B.absCurrent_mA;
-    }
-  } else {
-    /* case IN_IntegratorReset: */
-    b_hoisted_cond = ((SOCEstimation_B.DataTypeConversion1 == 0.0F) ||
-                      (SOCEstimation_B.DataTypeConversion1 == 2.0F));
-    if (b_hoisted_cond) {
-      SOCEstimation_DW.is_c14_SOCEstimation = SOCEstimat_IN_IntegratedCurrent;
-    } else {
-      SOCEstimation_B.IntegratedCurrent_k = 0.0F;
-    }
-  }
-
-  /* End of Chart: '<S3>/Chart1' */
-
-  /* Switch: '<S3>/Switch1' incorporates:
-   *  Inport: '<Root>/CC_Inputs'
-   */
-  if (SOCEstimation_U.CC_Inputs.LoopTimeSelector) {
-    /* Switch: '<S3>/Switch1' */
-    SOCEstimation_B.Switch1_p = SOCEstimation_B.IntegratedCurrent;
-  } else {
-    /* Gain: '<S3>/Gain2' */
-    SOCEstimation_B.IntegratedCurrent_g = SOCEstimation_P.Gain2_Gain *
-      SOCEstimation_B.IntegratedCurrent_k;
-
-    /* Switch: '<S3>/Switch1' */
-    SOCEstimation_B.Switch1_p = SOCEstimation_B.IntegratedCurrent_g;
-  }
-
-  /* End of Switch: '<S3>/Switch1' */
-
-  /* Gain: '<S3>/Multiply2' */
-  SOCEstimation_B.Multiply2 = SOCEstimation_P.Multiply2_Gain *
-    SOCEstimation_B.Switch1_p;
-
-  /* DataTypeConversion: '<S3>/Data Type Conversion3' */
-  SOCEstimation_B.DataTypeConversion3 = (int32_T)floorf
-    (SOCEstimation_B.Multiply2);
-
-  /* Chart: '<S3>/Chart' incorporates:
-   *  Inport: '<Root>/CC_Inputs'
-   *  Inport: '<Root>/DataPipeline'
-   */
-  if (SOCEstimation_DW.is_active_c27_SOCEstimation == 0U) {
-    SOCEstimation_DW.is_active_c27_SOCEstimation = 1U;
-    SOCEstimation_DW.durationCounter_1_mg = 0U;
-    SOCEstimation_DW.is_c27_SOCEstimation = SOCEst_IN_LobbyIntegrationState;
-    // SOCEstimation_B.TotalCapacityRemains_mAh = 0;
-    if (SOCEstimation_B.sf_UsableCapacity_mAh.MaxUsableCapacity_mAh > 0) {
-      SOCEstimation_DW.durationCounter_2_d = 0U;
-    }
-
-    /* Outport: '<Root>/pseudoLatchTrigger' */
-    SOCEstimation_Y.pseudoLatchTrigger = false;
-  } else {
-    switch (SOCEstimation_DW.is_c27_SOCEstimation) {
-     case SOCEstimation_IN_Fully_Charged:
-      if (SOCEstimation_B.DataTypeConversion1 == 0.0F) {
-        SOCEstimation_DW.durationCounter_1_mg = 0U;
-        SOCEstimation_DW.is_c27_SOCEstimation = SOCEst_IN_LobbyIntegrationState;
-        // SOCEstimation_B.TotalCapacityRemains_mAh = 0;
-        if (SOCEstimation_B.sf_UsableCapacity_mAh.MaxUsableCapacity_mAh > 0) {
-          SOCEstimation_DW.durationCounter_2_d = 0U;
-        }
-
-        /* Outport: '<Root>/pseudoLatchTrigger' */
-        SOCEstimation_Y.pseudoLatchTrigger = false;
-      } else {
-        u = SOCEstimation_B.Initial_Capacity_mAh;
-        q1 = SOCEstimation_B.DataTypeConversion3;
-        if ((u < 0) && (q1 < MIN_int32_T - u)) {
-          u = MIN_int32_T;
-        } else if ((u > 0) && (q1 > MAX_int32_T - u)) {
-          u = MAX_int32_T;
-        } else {
-          u += q1;
-        }
-
-        SOCEstimation_B.TotalCapacityRemains_mAh = u;
-        if (SOCEstimation_B.TotalCapacityRemains_mAh <
-            SOCEstimation_B.sf_UsableCapacity_mAh.MaxUsableCapacity_mAh) {
-          SOCEstimation_DW.durationCounter_2_d = 0U;
-        }
-      }
-      break;
-  
-     case SOCEst_IN_LobbyIntegrationState:
-        b_hoisted_cond = ((SOCEstimation_B.Initial_Capacity_mAh ==
-                         SOCEstimation_B.sf_UsableCapacity_mAh.MaxUsableCapacity_mAh)
-                        && (SOCEstimation_B.DataTypeConversion1 == 1.0F) &&
-                        (!SOCEstimation_U.CC_Inputs.pseudoLatchFlag));
-      if (b_hoisted_cond) {
-        SOCEstimation_DW.is_c27_SOCEstimation = SOCEstimation_IN_Fully_Charged;
-        SOCEstimation_B.TotalCapacityRemains_mAh =
-          SOCEstimation_B.sf_UsableCapacity_mAh.MaxUsableCapacity_mAh;
-        if (SOCEstimation_B.TotalCapacityRemains_mAh <
-            SOCEstimation_B.sf_UsableCapacity_mAh.MaxUsableCapacity_mAh) {
-          SOCEstimation_DW.durationCounter_2_d = 0U;
-        }
-      } else {
-        b_hoisted_cond = ((SOCEstimation_B.TotalCapacityRemains_mAh < 0) &&
-                          (!SOCEstimation_U.DataPipeline.VCU.isChargerConnected));
-        if (b_hoisted_cond) {
-          SOCEstimation_DW.is_c27_SOCEstimation = SOCEstimation_IN_Zero_Charged;
-        } else {
-          b_hoisted_cond = (SOCEstimation_U.CC_Inputs.pseudoLatchFlag &&
-                            SOCEstimation_U.DataPipeline.VCU.isChargerConnected &&
-                            (SOCEstimation_B.DataTypeConversion1 != 1.0F));
-          if (!b_hoisted_cond) {
-            SOCEstimation_DW.durationCounter_1_mg = 0U;
-          }
-
-          if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_1_mg *
-               100) > SOCEstimation_U.CC_Inputs.DebouncingTimeout_msec) {
-            SOCEstimation_DW.durationCounter_2_d = 0U;
-            SOCEstimation_DW.durationCounter_1_n = 0U;
-            SOCEstimation_DW.is_c27_SOCEstimation =
-              SOCEstima_IN_PseudoLatchHandler;
-          } else {
-            u = SOCEstimation_B.Initial_Capacity_mAh;
-            q1 = SOCEstimation_B.DataTypeConversion3;
-            if ((u < 0) && (q1 < MIN_int32_T - u)) {
-              u = MIN_int32_T;
-            } else if ((u > 0) && (q1 > MAX_int32_T - u)) {
-              u = MAX_int32_T;
-            } else {
-              u += q1;
-            }
-
-            SOCEstimation_B.TotalCapacityRemains_mAh = u;
-            if (SOCEstimation_B.TotalCapacityRemains_mAh <
-                SOCEstimation_B.sf_UsableCapacity_mAh.MaxUsableCapacity_mAh) {
-              SOCEstimation_DW.durationCounter_2_d = 0U;
-            }
-          }
-        }
-      }
-      break;
-
-     case SOCEstima_IN_PseudoLatchHandler:
-      if (SOCEstimation_B.TotalCapacityRemains_mAh <
-          SOCEstimation_B.sf_UsableCapacity_mAh.MaxUsableCapacity_mAh) {
-        SOCEstimation_DW.durationCounter_2_d = 0U;
-      }
-
-      if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_2_d * SOCEstimation_U.looptimeSoC)
-          > SOCEstimation_U.CC_Inputs.DebouncingTimeout_msec) {
-        /* Outport: '<Root>/pseudoLatchTrigger' */
-        SOCEstimation_Y.pseudoLatchTrigger = true;
-        SOCEstimation_DW.is_c27_SOCEstimation = SOCEstimation_IN_Fully_Charged;
-        SOCEstimation_B.TotalCapacityRemains_mAh =
-          SOCEstimation_B.sf_UsableCapacity_mAh.MaxUsableCapacity_mAh;
-        if (SOCEstimation_B.TotalCapacityRemains_mAh <
-            SOCEstimation_B.sf_UsableCapacity_mAh.MaxUsableCapacity_mAh) {
-          SOCEstimation_DW.durationCounter_2_d = 0U;
-        }
-      } else {
-        if (SOCEstimation_U.CC_Inputs.pseudoLatchFlag) {
-          SOCEstimation_DW.durationCounter_1_n = 0U;
-        }
-
-        if ((real_T)(uint32_T)((int32_T)SOCEstimation_DW.durationCounter_1_n *
-                               100) >
-            SOCEstimation_U.CC_Inputs.DebouncingTimeout_msec) {
-          SOCEstimation_DW.durationCounter_1_mg = 0U;
-          SOCEstimation_DW.is_c27_SOCEstimation =
-            SOCEst_IN_LobbyIntegrationState;
-          // SOCEstimation_B.TotalCapacityRemains_mAh = 0;
-          if (SOCEstimation_B.sf_UsableCapacity_mAh.MaxUsableCapacity_mAh > 0) {
-            SOCEstimation_DW.durationCounter_2_d = 0U;
-          }
-
-          /* Outport: '<Root>/pseudoLatchTrigger' */
-          SOCEstimation_Y.pseudoLatchTrigger = false;
-        } else {
-          u = SOCEstimation_B.Initial_Capacity_mAh;
-          q1 = SOCEstimation_B.DataTypeConversion3;
-          if ((u < 0) && (q1 < MIN_int32_T - u)) {
-            u = MIN_int32_T;
-          } else if ((u > 0) && (q1 > MAX_int32_T - u)) {
-            u = MAX_int32_T;
-          } else {
-            u += q1;
-          }
-
-          SOCEstimation_B.TotalCapacityRemains_mAh = u;
-          if (SOCEstimation_B.TotalCapacityRemains_mAh <
-              SOCEstimation_B.sf_UsableCapacity_mAh.MaxUsableCapacity_mAh) {
-            SOCEstimation_DW.durationCounter_2_d = 0U;
-          }
-        }
-      }
-      break;
-
-     default:
-      /* case IN_Zero_Charged: */
-      if (SOCEstimation_U.DataPipeline.VCU.isChargerConnected) {
-        SOCEstimation_DW.durationCounter_1_mg = 0U;
-        SOCEstimation_DW.is_c27_SOCEstimation = SOCEst_IN_LobbyIntegrationState;
-        SOCEstimation_B.TotalCapacityRemains_mAh = 0;
-        if (SOCEstimation_B.sf_UsableCapacity_mAh.MaxUsableCapacity_mAh > 0) {
-          SOCEstimation_DW.durationCounter_2_d = 0U;
-        }
-
-        /* Outport: '<Root>/pseudoLatchTrigger' */
-        SOCEstimation_Y.pseudoLatchTrigger = false;
-      } else {
-        SOCEstimation_B.TotalCapacityRemains_mAh = 0;
-        if (SOCEstimation_B.sf_UsableCapacity_mAh.MaxUsableCapacity_mAh > 0) {
-          SOCEstimation_DW.durationCounter_2_d = 0U;
-        }
-      }
-      break;
-    }
-  }
-
-  b_hoisted_cond = (SOCEstimation_U.CC_Inputs.pseudoLatchFlag &&
-                    SOCEstimation_U.DataPipeline.VCU.isChargerConnected &&
-                    (SOCEstimation_B.DataTypeConversion1 != 1.0F));
-  if (b_hoisted_cond) {
-    SOCEstimation_DW.durationCounter_1_mg++;
-  } else {
-    SOCEstimation_DW.durationCounter_1_mg = 0U;
-  }
-
-  if (!SOCEstimation_U.CC_Inputs.pseudoLatchFlag) {
-    SOCEstimation_DW.durationCounter_1_n++;
-  } else {
-    SOCEstimation_DW.durationCounter_1_n = 0U;
-  }
-
-  if (SOCEstimation_B.TotalCapacityRemains_mAh >=
-      SOCEstimation_B.sf_UsableCapacity_mAh.MaxUsableCapacity_mAh) {
-    SOCEstimation_DW.durationCounter_2_d++;
-  } else {
-    SOCEstimation_DW.durationCounter_2_d = 0U;
-  }
-
-  /* End of Chart: '<S3>/Chart' */
-
-  /* DataTypeConversion: '<S3>/Data Type Conversion2' */
-  SOCEstimation_B.DataTypeConversion2 = SOCEstimation_B.TotalCapacityRemains_mAh;
-
-  /* Product: '<S3>/Divide2' */
-  SOCEstimation_B.SOC_ChargeDischarge = (real_T)
-    SOCEstimation_B.TotalCapacityRemains_mAh / (real_T)
-    SOCEstimation_B.sf_UsableCapacity_mAh.MaxUsableCapacity_mAh;
-
-  /* Gain: '<S3>/Gain1' */
-  SOCEstimation_B.TotalSOCRemains_cpct = (int32_T)floor
-    (SOCEstimation_P.Gain1_Gain * SOCEstimation_B.SOC_ChargeDischarge);
+  /* End of Chart: '<S3>/SOC_Calibration' */
 
   /* DataStoreWrite: '<S1>/Data Store Write' */
-  SOCEstimation_DW.CapacityRemains_mAh = SOCEstimation_B.DataTypeConversion2;
+  SOCEstimation_DW.CapacityRemains_mAh =
+    SOCEstimation_B.TotalCapacityRemains_mAh;
 
-  /* DataStoreRead: '<S1>/Data Store Read1' */
-  SOCEstimation_B.SOC_cpct = SOCEstimation_DW.SOC_pct;
+  /* DataTypeConversion: '<S3>/Data Type Conversion4' */
+  rtb_DataTypeConversion4 = (real_T)SOCEstimation_DW.CCState_k;
 
-  /* Product: '<S7>/Divide1' */
-  SOCEstimation_B.SOH = (real32_T)
-    SOCEstimation_B.sf_UsableCapacity_mAh.MaxUsableCapacity_mAh / (real32_T)
-    SOCEstimation_B.Final_InstalledCapacity_mAh;
+  /* Chart: '<S3>/Modulus IntegCurrent' incorporates:
+   *  Abs: '<S3>/Abs'
+   *  Inport: '<Root>/DataPipeline'
+   */
+  /* Gateway: SOCEstimation/SOC_Calc/Modulus IntegCurrent */
+  /* During: SOCEstimation/SOC_Calc/Modulus IntegCurrent */
+  if (SOCEstimation_DW.is_active_c20_SOCEstimation == 0U) {
+    /* Entry: SOCEstimation/SOC_Calc/Modulus IntegCurrent */
+    SOCEstimation_DW.is_active_c20_SOCEstimation = 1U;
 
-  /* Gain: '<S7>/Gain' */
-  SOCEstimation_B.SOH_cpct = (int32_T)floorf(SOCEstimation_P.Gain_Gain_a *
-    SOCEstimation_B.SOH);
-
-  /* Saturate: '<S1>/Saturation1' */
-  u = SOCEstimation_B.SOH_cpct;
-  q1 = SOCEstimation_P.Saturation1_LowerSat;
-  u2 = SOCEstimation_P.Saturation1_UpperSat;
-  if (u > u2) {
-    /* Saturate: '<S1>/Saturation1' */
-    SOCEstimation_B.SOH_cpct_f = u2;
-  } else if (u < q1) {
-    /* Saturate: '<S1>/Saturation1' */
-    SOCEstimation_B.SOH_cpct_f = q1;
+    /* Entry Internal: SOCEstimation/SOC_Calc/Modulus IntegCurrent */
+    /* Transition: '<S9>:4' */
+    /* Entry 'ModIntegratedCurrent': '<S9>:3' */
   } else {
-    /* Saturate: '<S1>/Saturation1' */
-    SOCEstimation_B.SOH_cpct_f = u;
-  }
-
-  /* End of Saturate: '<S1>/Saturation1' */
-
-  /* DataTypeConversion: '<S7>/Data Type Conversion' */
-  SOCEstimation_B.TotalCapacityExchange_mAh = (int32_T)floorf
-    (SOCEstimation_B.Gain2);
-
-  /* MATLAB Function: '<S1>/SOC_WriteToFlash' */
-  SOCEstimation_SOC_WriteToFlash(SOCEstimation_B.SOH_cpct_f,
-    SOCEstimation_B.TotalCapacityExchange_mAh,
-    SOCEstimation_B.sf_UsableCapacity_mAh.MaxUsableCapacity_mAh,
-    SOCEstimation_B.SOC_cpct, SOCEstimation_B.DataTypeConversion3,
-    SOCEstimation_B.DataTypeConversion2, &SOCEstimation_B.sf_SOC_WriteToFlash);
-
-  /* Saturate: '<S1>/Saturation' */
-  u = SOCEstimation_B.TotalSOCRemains_cpct;
-  q1 = SOCEstimation_P.Saturation_LowerSat;
-  u2 = SOCEstimation_P.Saturation_UpperSat;
-  if (u > u2) {
-    /* Saturate: '<S1>/Saturation' */
-    SOCEstimation_B.SOC_cpct_h = u2;
-  } else if (u < q1) {
-    /* Saturate: '<S1>/Saturation' */
-    SOCEstimation_B.SOC_cpct_h = q1;
-  } else {
-    /* Saturate: '<S1>/Saturation' */
-    SOCEstimation_B.SOC_cpct_h = u;
-  }
-
-  /* End of Saturate: '<S1>/Saturation' */
-
-  /* Sum: '<S1>/Subtract' */
-  SOCEstimation_B.Subtract = (real32_T)SOCEstimation_B.SOC_cpct_h -
-    SOCEstimation_B.SOC_cpct;
-
-  /* Abs: '<S1>/Abs' */
-  SOCEstimation_B.Abs = fabsf(SOCEstimation_B.Subtract);
-
-  /* Switch: '<S1>/Switch1' */
-  if (SOCEstimation_B.Abs > SOCEstimation_P.Switch1_Threshold) {
-    /* Switch: '<S1>/Switch1' incorporates:
-     *  Constant: '<S1>/Constant'
+    /* Abs: '<S3>/Abs' incorporates:
+     *  Inport: '<Root>/Current_mA'
      */
-    SOCEstimation_B.Switch1 = SOCEstimation_P.Constant_Value;
-  } else {
-    /* Switch: '<S1>/Switch1' incorporates:
-     *  Constant: '<S1>/Constant1'
-     */
-    SOCEstimation_B.Switch1 = SOCEstimation_P.Constant1_Value;
+    /* During 'ModIntegratedCurrent': '<S9>:3' */
+    /* '<S9>:3:3' ModIntegratedCurrent = single(single(LoopTimer_SOC_msec)*single(Current_mA))+ModIntegratedCurrent; */
+    if (SOCEstimation_U.Current_mA < 0) {
+      rtb_DataTypeConversion3 = -SOCEstimation_U.Current_mA;
+    } else {
+      rtb_DataTypeConversion3 = SOCEstimation_U.Current_mA;
+    }
+
+    SOCEstimation_B.ModIntegratedCurrent +=
+      SOCEstimation_U.DataPipeline.LoopTimer_SOC_msec * (real32_T)
+      rtb_DataTypeConversion3;
   }
 
-  /* End of Switch: '<S1>/Switch1' */
+  /* End of Chart: '<S3>/Modulus IntegCurrent' */
+
+  /* DataTypeConversion: '<S3>/Data Type Conversion5' incorporates:
+   *  Gain: '<S3>/Gain3'
+   *  Gain: '<S3>/Multiply1'
+   */
+  SOCEstimation_Y.CC_Outputs.TotalCapacityExchange_mAh = (int32_T)floorf(0.001F *
+    SOCEstimation_B.ModIntegratedCurrent * 0.000277777785F);
+
+  /* Switch: '<S3>/Switch' incorporates:
+   *  Constant: '<S3>/Constant1'
+   */
+  if (rtb_DataTypeConversion4 >= 3.0) {
+    SOCEstimation_Y.CC_Outputs.SOC_cpct = 10000;
+  } else {
+    /* Gain: '<S3>/Gain1' incorporates:
+     *  Product: '<S3>/Divide2'
+     */
+    rtb_DataTypeConversion3 = (int32_T)floor((real_T)
+      SOCEstimation_B.TotalCapacityRemains_mAh / (real_T)rtb_Switch * 10000.0);
+
+    /* Saturate: '<S3>/Saturation' */
+    if (rtb_DataTypeConversion3 > 10000) {
+      SOCEstimation_Y.CC_Outputs.SOC_cpct = 10000;
+    } else if (rtb_DataTypeConversion3 < 0) {
+      SOCEstimation_Y.CC_Outputs.SOC_cpct = 0;
+    } else {
+      SOCEstimation_Y.CC_Outputs.SOC_cpct = rtb_DataTypeConversion3;
+    }
+
+    /* End of Saturate: '<S3>/Saturation' */
+  }
+
+  /* End of Switch: '<S3>/Switch' */
+
+  /* MATLAB Function: '<S1>/MATLAB Function' incorporates:
+   *  Inport: '<Root>/CC_Inputs'
+   */
+  /* MATLAB Function 'SOCEstimation/MATLAB Function': '<S2>:1' */
+  /* '<S2>:1:3' if (calcSoH && prevLatch) */
+  if (SOCEstimation_B.calcSoH && SOCEstimation_B.sf_SOC_ReadFromEEPROM.PrevLatch)
+  {
+    /* '<S2>:1:4' SoH2 = single((single(capLatch) / single(insCap)) / Tcomp) * 100; */
+    rtb_SoH2 = (real32_T)SOCEstimation_B.capLatch / (real32_T)
+      SOCEstimation_U.CC_Inputs.InstalledCapacity_mAh / (real32_T)
+      SOCEstimation_B.sf_SOC_ReadFromEEPROM.TcompPersist * 100.0F;
+    SOCEstimation_B.sf_SOC_ReadFromEEPROM.SoH2 = rtb_SoH2;                          //manual changes
+    SOCEstimation_B.calcSoH                    =  false; 
+  } else {
+    /* '<S2>:1:5' else */
+    /* '<S2>:1:6' SoH2 = prevSoH2; */
+    rtb_SoH2 = SOCEstimation_B.sf_SOC_ReadFromEEPROM.SoH2;
+  }
+
+  /* End of MATLAB Function: '<S1>/MATLAB Function' */
 
   /* BusCreator: '<S1>/Bus Creator1' incorporates:
    *  Outport: '<Root>/CC_Outputs'
    */
-  SOCEstimation_Y.CC_Outputs.Initial_Capacity_mAh =
-    SOCEstimation_B.Initial_Capacity_mAh;
   SOCEstimation_Y.CC_Outputs.Total_CapacityRemains_mAh =
-    SOCEstimation_B.DataTypeConversion2;
-  SOCEstimation_Y.CC_Outputs.Total_Discharge_mAh =
-    SOCEstimation_B.DataTypeConversion3;
-  SOCEstimation_Y.CC_Outputs.SOC_cpct = SOCEstimation_B.SOC_cpct_h;
-  SOCEstimation_Y.CC_Outputs.CC_State = SOCEstimation_B.CC_State;
-  SOCEstimation_Y.CC_Outputs.MaxUsableCapacity_mAh =
-    SOCEstimation_B.sf_UsableCapacity_mAh.MaxUsableCapacity_mAh;
-  SOCEstimation_Y.CC_Outputs.TotalCapacityExchange_mAh =
-    SOCEstimation_B.TotalCapacityExchange_mAh;
-  SOCEstimation_Y.CC_Outputs.SOH_cpct = SOCEstimation_B.SOH_cpct_f;
-  SOCEstimation_Y.CC_Outputs.CycleCount = SOCEstimation_B.CycleCount;
+    SOCEstimation_B.TotalCapacityRemains_mAh;
+  SOCEstimation_Y.CC_Outputs.CC_State = SOCEstimation_DW.CCState_k;
+  SOCEstimation_Y.CC_Outputs.MaxUsableCapacity_mAh = rtb_Switch;
+  SOCEstimation_Y.CC_Outputs.SOH_pct = SOCEstimation_B.Switch;
 
-  /* Outport: '<Root>/SOC_FromFlash' */
-  SOCEstimation_Y.SOC_FromFlash = SOCEstimation_B.sf_SOC_WriteToFlash.SOC;
-
-  /* Update for DiscreteIntegrator: '<S7>/Discrete-Time Integrator' */
-  SOCEstimation_DW.DiscreteTimeIntegrator_DSTATE += (real32_T)
-    SOCEstimation_P.DiscreteTimeIntegrator_gainval * 1.16415322E-10F * (real32_T)
-    SOCEstimation_B.absCurrent_mA_p;
-
-  /* Update for DiscreteIntegrator: '<S3>/Discrete-Time Integrator2' */
-  SOCEstimation_DW.DiscreteTimeIntegrator2_DSTATE +=
-    SOCEstimation_P.DiscreteTimeIntegrator2_gainval *
-    SOCEstimation_B.absCurrent_mA;
-  if (SOCEstimation_B.DataTypeConversion1 > 0.0F) {
-    SOCEstimation_DW.DiscreteTimeIntegrator2_PrevRes = 1;
+  /* Saturate: '<S1>/Saturation' */
+  if (rtb_SoH2 > 100.0F) {
+    /* BusCreator: '<S1>/Bus Creator1' incorporates:
+     *  Outport: '<Root>/CC_Outputs'
+     */
+    SOCEstimation_Y.CC_Outputs.SoH2 = 100.0F;
+  } else if (rtb_SoH2 < 0.0F) {
+    /* BusCreator: '<S1>/Bus Creator1' incorporates:
+     *  Outport: '<Root>/CC_Outputs'
+     */
+    SOCEstimation_Y.CC_Outputs.SoH2 = 0.0F;
   } else {
-    SOCEstimation_DW.DiscreteTimeIntegrator2_PrevRes = 0;
+    /* BusCreator: '<S1>/Bus Creator1' incorporates:
+     *  Outport: '<Root>/CC_Outputs'
+     */
+    SOCEstimation_Y.CC_Outputs.SoH2 = rtb_SoH2;
   }
 
-  /* End of Update for DiscreteIntegrator: '<S3>/Discrete-Time Integrator2' */
+  /* End of Saturate: '<S1>/Saturation' */
 }
 
 /* Model initialize function */
@@ -1421,102 +824,56 @@ void SOCEstimation_initialize(void)
   (void) memset(((void *) &SOCEstimation_B), 0,
                 sizeof(B_SOCEstimation_T));
 
-  {
-    SOCEstimation_B.CC_State = CoulombCounting;
-  }
-
   /* states (dwork) */
   (void) memset((void *)&SOCEstimation_DW, 0,
                 sizeof(DW_SOCEstimation_T));
 
-  /* exported global states */
-  PSEUDO_LATCH_SUCCESS = false;
-
   /* external inputs */
   (void)memset(&SOCEstimation_U, 0, sizeof(ExtU_SOCEstimation_T));
-  SOCEstimation_U.ProtectionOutput = SOCEstimation_rtZProtectionStat;
   SOCEstimation_U.CellBalancingOutput = SOCEstimation_rtZCellBalancingO;
 
   /* external outputs */
-  (void)memset(&SOCEstimation_Y, 0, sizeof(ExtY_SOCEstimation_T));
   SOCEstimation_Y.CC_Outputs = SOCEstimation_rtZCC_OutputsBus;
 
-  /* Start for DataStoreMemory: '<S1>/Data Store Memory2' */
-  PSEUDO_LATCH_SUCCESS = SOCEstimation_P.DataStoreMemory2_InitialValue;
-
-  /* Start for DataStoreMemory: '<S1>/Data Store Memory1' */
-  SOCEstimation_DW.SOC_pct = SOCEstimation_P.DataStoreMemory1_InitialValue;
-
   /* Start for DataStoreMemory: '<S1>/Data Store Memory' */
-  SOCEstimation_DW.CapacityRemains_mAh =
-    SOCEstimation_P.DataStoreMemory_InitialValue;
-  SOCEstimation_PrevZCX.Subsystem_Trig_ZCE = UNINITIALIZED_ZCSIG;
+  SOCEstimation_DW.CapacityRemains_mAh = 0;
 
-  /* InitializeConditions for DiscreteIntegrator: '<S7>/Discrete-Time Integrator' */
-  SOCEstimation_DW.DiscreteTimeIntegrator_DSTATE =
-    SOCEstimation_P.DiscreteTimeIntegrator_IC;
+  /* InitializeConditions for UnitDelay: '<S3>/Unit Delay' */
+  SOCEstimation_DW.CCState_k = Vehicle_at_Rest;
 
-  /* InitializeConditions for DiscreteIntegrator: '<S3>/Discrete-Time Integrator2' */
-  SOCEstimation_DW.DiscreteTimeIntegrator2_DSTATE =
-    SOCEstimation_P.DiscreteTimeIntegrator2_IC;
-  SOCEstimation_DW.DiscreteTimeIntegrator2_PrevRes = 2;
-
-  /* SystemInitialize for Chart: '<S7>/Chart' */
-  SOCEstimation_DW.is_active_c19_SOCEstimation = 0U;
-  SOCEstimation_B.IntegratedCurrent_h = 0.0F;
-
-  /* SystemInitialize for Chart: '<S8>/SOH_Calibration' */
-  SOCEstimation_DW.is_active_c21_SOCEstimation = 0U;
-  SOCEstimation_DW.is_c21_SOCEstimation = SOCEstimatio_IN_NO_ACTIVE_CHILD;
-  SOCEstimation_B.CalcEnable = 0.0;
-
-  /* SystemInitialize for Outport: '<Root>/SOHCalibrationCycleCompletion' incorporates:
-   *  Chart: '<S8>/SOH_Calibration'
+  /* SystemInitialize for DataTypeConversion: '<S14>/Data Type Conversion1' incorporates:
+   *  Outport: '<S5>/MaxUsableCapacity'
    */
-  SOCEstimation_Y.SOHCalibrationCycleCompletion = 0.0;
+  SOCEstimation_B.Effectiveusablecapacity = 0;
 
-  /* SystemInitialize for Enabled SubSystem: '<S8>/Subsystem' */
-  /* SystemInitialize for Chart: '<S18>/Chart' */
-  SOCEstimation_DW.is_active_c22_SOCEstimation = 0U;
-  SOCEstimation_DW.is_c22_SOCEstimation = SOCEstimatio_IN_NO_ACTIVE_CHILD;
-  SOCEstimation_DW.IntegratedCurrent = 0.0F;
-  SOCEstimation_B.Final_IntegratedCurrent = 0.0F;
-
-  /* SystemInitialize for DataTypeConversion: '<S18>/Data Type Conversion' incorporates:
-   *  Outport: '<S18>/Tested_InstalledCapacity_mAh'
+  /* SystemInitialize for Switch: '<S5>/Switch' incorporates:
+   *  Outport: '<S5>/SOH_pct'
    */
-  SOCEstimation_B.DataTypeConversion_f =
-    SOCEstimation_P.Tested_InstalledCapacity_mAh_Y0;
+  SOCEstimation_B.Switch = 0.0F;
 
-  /* End of SystemInitialize for SubSystem: '<S8>/Subsystem' */
+  /* End of SystemInitialize for SubSystem: '<S1>/SoH calculation' */
 
-  /* SystemInitialize for Chart: '<S1>/Chart' */
-  SOCEstimation_DW.is_active_c25_SOCEstimation = 0U;
-  SOCEstimation_DW.is_c25_SOCEstimation = SOCEstimatio_IN_NO_ACTIVE_CHILD;
-  SOCEstimation_B.Final_InstalledCapacity_mAh = 0;
+  /* SystemInitialize for MATLAB Function: '<S6>/MATLAB Function' */
+  SOCEstimation_DW.counter_not_empty = false;
 
-  /* SystemInitialize for Chart: '<S4>/SOC_Calibration' */
+  /* SystemInitialize for Chart: '<S3>/IntegCurrent' */
+  SOCEstimation_B.IntegratedCurrent = 0.0F;
+  SOCEstimation_DW.is_active_c42_SOCEstimation = 0U;
+  SOCEstimation_DW.is_c42_SOCEstimation = SOCEstimatio_IN_NO_ACTIVE_CHILD;
+
+  /* SystemInitialize for Chart: '<S3>/SOC_Calibration' */
   SOCEstimation_DW.temporalCounter_i1 = 0U;
+  SOCEstimation_B.capLatch = 0;
+  SOCEstimation_B.TotalCapacityRemains_mAh = 0;
+  SOCEstimation_Y.CC_Outputs.Initial_Capacity_mAh = 0;
+  SOCEstimation_B.calcSoH = false;
+  SOCEstimation_DW.latchMake = false;
   SOCEstimation_DW.is_active_c15_SOCEstimation = 0U;
   SOCEstimation_DW.is_c15_SOCEstimation = SOCEstimatio_IN_NO_ACTIVE_CHILD;
-  SOCEstimation_DW.TransitionCapacity_mAh = 0;
-  SOCEstimation_B.CC_State = CoulombCounting;
-  SOCEstimation_B.Initial_Capacity_mAh = 0;
 
-  /* SystemInitialize for Chart: '<S3>/Chart1' */
-  SOCEstimation_DW.is_active_c14_SOCEstimation = 0U;
-  SOCEstimation_DW.is_c14_SOCEstimation = SOCEstimatio_IN_NO_ACTIVE_CHILD;
-  SOCEstimation_B.IntegratedCurrent_k = 0.0F;
-
-  /* SystemInitialize for Chart: '<S3>/Chart' */
-  SOCEstimation_DW.is_active_c27_SOCEstimation = 0U;
-  SOCEstimation_DW.is_c27_SOCEstimation = SOCEstimatio_IN_NO_ACTIVE_CHILD;
-  SOCEstimation_B.TotalCapacityRemains_mAh = 0;
-
-  /* SystemInitialize for Outport: '<Root>/pseudoLatchTrigger' incorporates:
-   *  Chart: '<S3>/Chart'
-   */
-  SOCEstimation_Y.pseudoLatchTrigger = false;
+  /* SystemInitialize for Chart: '<S3>/Modulus IntegCurrent' */
+  SOCEstimation_B.ModIntegratedCurrent = 0.0F;
+  SOCEstimation_DW.is_active_c20_SOCEstimation = 0U;
 }
 
 /* Model terminate function */
