@@ -97,6 +97,27 @@ typedef struct {
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_EKF_InputsBus_
+#define DEFINED_TYPEDEF_FOR_EKF_InputsBus_
+
+typedef struct {
+  real_T SoCData[101];
+  real_T ocvData[101];
+  real_T cellIR_mOhm;
+  real_T loopTimeEKF;
+  real32_T processNoise;
+  real32_T measurementNoise;
+  int32_T lowerActivationThreshold;
+  int32_T higherActivationThreshold;
+  boolean_T enableEKF;
+  int32_T delCurrentThresh_mA;
+  int32_T delVoltThresh_mV;
+  uint32_T currentTime;
+  uint32_T timeToWaitUnderLoad;
+} EKF_InputsBus;
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_SlowCharge_
 #define DEFINED_TYPEDEF_FOR_SlowCharge_
 
@@ -161,29 +182,6 @@ typedef struct {
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_BalancingState_
-#define DEFINED_TYPEDEF_FOR_BalancingState_
-
-typedef enum {
-  Terminate = 0,                       /* Default value */
-  Lobby,
-  Even_Balancing,
-  Odd_Balancing
-} BalancingState;
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_CellBalancingOutputBus_
-#define DEFINED_TYPEDEF_FOR_CellBalancingOutputBus_
-
-typedef struct {
-  int32_T MaxImbalance_mV;
-  boolean_T BalanceEn;
-  BalancingState CurrentBalancingState;
-} CellBalancingOutputBus;
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_CCState_
 #define DEFINED_TYPEDEF_FOR_CCState_
 
@@ -191,7 +189,8 @@ typedef enum {
   Vehicle_at_Rest = 0,                 /* Default value */
   CoulombCounting,
   PseudoLatching,
-  Recalibrate
+  Recalibrate,
+  EKFestimation
 } CCState;
 
 #endif
@@ -200,7 +199,6 @@ typedef enum {
 #define DEFINED_TYPEDEF_FOR_CC_OutputsBus_
 
 typedef struct {
-  int32_T Initial_Capacity_mAh;
   int32_T Total_CapacityRemains_mAh;
   int32_T SOC_cpct;
   CCState CC_State;
@@ -208,6 +206,7 @@ typedef struct {
   int32_T TotalCapacityExchange_mAh;
   real32_T SOH_pct;
   real32_T SoH2;
+  boolean_T EKF_resetTimer;
 } CC_OutputsBus;
 
 #endif

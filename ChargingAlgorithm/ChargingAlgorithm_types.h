@@ -28,7 +28,8 @@ typedef enum {
   Vehicle_at_Rest = 0,                 /* Default value */
   CoulombCounting,
   PseudoLatching,
-  Recalibrate
+  Recalibrate,
+  EKFestimation
 } CCState;
 
 #endif
@@ -37,7 +38,6 @@ typedef enum {
 #define DEFINED_TYPEDEF_FOR_CC_OutputsBus_
 
 typedef struct {
-  int32_T Initial_Capacity_mAh;
   int32_T Total_CapacityRemains_mAh;
   int32_T SOC_cpct;
   CCState CC_State;
@@ -45,6 +45,7 @@ typedef struct {
   int32_T TotalCapacityExchange_mAh;
   real32_T SOH_pct;
   real32_T SoH2;
+  boolean_T EKF_resetTimer;
 } CC_OutputsBus;
 
 #endif
