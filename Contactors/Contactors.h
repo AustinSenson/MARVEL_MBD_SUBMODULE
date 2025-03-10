@@ -18,8 +18,8 @@
  * Validation result: Passed (9), Warning (1), Error (0)
  */
 
-#ifndef RTW_HEADER_Contactors_h_
-#define RTW_HEADER_Contactors_h_
+#ifndef Contactors_h_
+#define Contactors_h_
 #ifndef Contactors_COMMON_INCLUDES_
 #define Contactors_COMMON_INCLUDES_
 #include "rtwtypes.h"
@@ -44,7 +44,6 @@
 typedef struct {
   real_T PreIntegratedTime;            /* '<S1>/Discrete-Time Integrator' */
   real_T PreTimeReset;                 /* '<S1>/Contactor_StateMachine' */
-  int32_T Add;                         /* '<S1>/Add' */
   boolean_T Flags_Detection;           /* '<S1>/AND' */
 } B_Contactors_T;
 
@@ -53,17 +52,17 @@ typedef struct {
   real_T UnitDelay_DSTATE;             /* '<S1>/Unit Delay' */
   real_T DiscreteTimeIntegrator_DSTATE;/* '<S1>/Discrete-Time Integrator' */
   uint32_T durationCounter_1;          /* '<S1>/Contactor_StateMachine' */
-  uint32_T durationCounter_1_f;        /* '<S1>/Contactor_StateMachine' */
-  uint32_T durationCounter_1_b;        /* '<S1>/Contactor_StateMachine' */
+  uint32_T durationCounter_1_e;        /* '<S1>/Contactor_StateMachine' */
+  uint32_T durationCounter_1_m;        /* '<S1>/Contactor_StateMachine' */
   ContactorsFlags Memory_PreviousInput;/* '<S1>/Memory' */
   ContactorsFlags Memory1_PreviousInput;/* '<S1>/Memory1' */
   ContactorsFlags Memory2_PreviousInput;/* '<S1>/Memory2' */
   int8_T DiscreteTimeIntegrator_PrevRese;/* '<S1>/Discrete-Time Integrator' */
-  uint8_T is_ContactorOperations;      /* '<S1>/Contactor_StateMachine' */
-  uint8_T is_PreCharging_Substate_Old; /* '<S1>/Contactor_StateMachine' */
-  uint8_T is_PreCharging_Substate_New; /* '<S1>/Contactor_StateMachine' */
   uint8_T PreChargeRetryCheck;         /* '<S1>/Contactor_StateMachine' */
   uint8_T is_active_c1_Contactors;     /* '<S1>/Contactor_StateMachine' */
+  uint8_T is_ContactorOperations;      /* '<S1>/Contactor_StateMachine' */
+  uint8_T is_PreCharging_Substate_New; /* '<S1>/Contactor_StateMachine' */
+  uint8_T is_PreCharging_Substate_Old; /* '<S1>/Contactor_StateMachine' */
 } DW_Contactors_T;
 
 /* Invariant block signals (default storage) */
@@ -77,7 +76,6 @@ typedef struct {
   BMSState BMS_State;                  /* '<Root>/BMS_State' */
   boolean_T PermanentFailRecoveryTrigger;
                                      /* '<Root>/PermanentFailRecoveryTrigger' */
-  int32_T TerminalVoltage_mV;          /* '<Root>/TerminalVoltage_mV' */
   ThresholdsBus Thresholds;            /* '<Root>/Thresholds' */
   ProtectionState_Out ProtectionOutput;/* '<Root>/ProtectionOutput' */
   DataPipelineBus DataPipeline;        /* '<Root>/DataPipeline' */
@@ -143,44 +141,44 @@ extern RT_MODEL_Contactors_T *const Contactors_M;
  * MATLAB hilite_system command to trace the generated code back
  * to the parent model.  For example,
  *
- * hilite_system('marvelMBD_v00_0A_0D_exported/Contactors')    - opens subsystem marvelMBD_v00_0A_0D_exported/Contactors
- * hilite_system('marvelMBD_v00_0A_0D_exported/Contactors/Kp') - opens and selects block Kp
+ * hilite_system('v00_0A_0E/Contactors')    - opens subsystem v00_0A_0E/Contactors
+ * hilite_system('v00_0A_0E/Contactors/Kp') - opens and selects block Kp
  *
  * Here is the system hierarchy for this model
  *
- * '<Root>' : 'marvelMBD_v00_0A_0D_exported'
- * '<S1>'   : 'marvelMBD_v00_0A_0D_exported/Contactors'
- * '<S2>'   : 'marvelMBD_v00_0A_0D_exported/Contactors/Compare To Constant'
- * '<S3>'   : 'marvelMBD_v00_0A_0D_exported/Contactors/Compare To Constant1'
- * '<S4>'   : 'marvelMBD_v00_0A_0D_exported/Contactors/Compare To Constant10'
- * '<S5>'   : 'marvelMBD_v00_0A_0D_exported/Contactors/Compare To Constant11'
- * '<S6>'   : 'marvelMBD_v00_0A_0D_exported/Contactors/Compare To Constant12'
- * '<S7>'   : 'marvelMBD_v00_0A_0D_exported/Contactors/Compare To Constant13'
- * '<S8>'   : 'marvelMBD_v00_0A_0D_exported/Contactors/Compare To Constant14'
- * '<S9>'   : 'marvelMBD_v00_0A_0D_exported/Contactors/Compare To Constant15'
- * '<S10>'  : 'marvelMBD_v00_0A_0D_exported/Contactors/Compare To Constant16'
- * '<S11>'  : 'marvelMBD_v00_0A_0D_exported/Contactors/Compare To Constant17'
- * '<S12>'  : 'marvelMBD_v00_0A_0D_exported/Contactors/Compare To Constant18'
- * '<S13>'  : 'marvelMBD_v00_0A_0D_exported/Contactors/Compare To Constant19'
- * '<S14>'  : 'marvelMBD_v00_0A_0D_exported/Contactors/Compare To Constant2'
- * '<S15>'  : 'marvelMBD_v00_0A_0D_exported/Contactors/Compare To Constant20'
- * '<S16>'  : 'marvelMBD_v00_0A_0D_exported/Contactors/Compare To Constant21'
- * '<S17>'  : 'marvelMBD_v00_0A_0D_exported/Contactors/Compare To Constant22'
- * '<S18>'  : 'marvelMBD_v00_0A_0D_exported/Contactors/Compare To Constant23'
- * '<S19>'  : 'marvelMBD_v00_0A_0D_exported/Contactors/Compare To Constant24'
- * '<S20>'  : 'marvelMBD_v00_0A_0D_exported/Contactors/Compare To Constant25'
- * '<S21>'  : 'marvelMBD_v00_0A_0D_exported/Contactors/Compare To Constant26'
- * '<S22>'  : 'marvelMBD_v00_0A_0D_exported/Contactors/Compare To Constant27'
- * '<S23>'  : 'marvelMBD_v00_0A_0D_exported/Contactors/Compare To Constant28'
- * '<S24>'  : 'marvelMBD_v00_0A_0D_exported/Contactors/Compare To Constant29'
- * '<S25>'  : 'marvelMBD_v00_0A_0D_exported/Contactors/Compare To Constant3'
- * '<S26>'  : 'marvelMBD_v00_0A_0D_exported/Contactors/Compare To Constant30'
- * '<S27>'  : 'marvelMBD_v00_0A_0D_exported/Contactors/Compare To Constant4'
- * '<S28>'  : 'marvelMBD_v00_0A_0D_exported/Contactors/Compare To Constant5'
- * '<S29>'  : 'marvelMBD_v00_0A_0D_exported/Contactors/Compare To Constant6'
- * '<S30>'  : 'marvelMBD_v00_0A_0D_exported/Contactors/Compare To Constant7'
- * '<S31>'  : 'marvelMBD_v00_0A_0D_exported/Contactors/Compare To Constant8'
- * '<S32>'  : 'marvelMBD_v00_0A_0D_exported/Contactors/Compare To Constant9'
- * '<S33>'  : 'marvelMBD_v00_0A_0D_exported/Contactors/Contactor_StateMachine'
+ * '<Root>' : 'v00_0A_0E'
+ * '<S1>'   : 'v00_0A_0E/Contactors'
+ * '<S2>'   : 'v00_0A_0E/Contactors/Compare To Constant'
+ * '<S3>'   : 'v00_0A_0E/Contactors/Compare To Constant1'
+ * '<S4>'   : 'v00_0A_0E/Contactors/Compare To Constant10'
+ * '<S5>'   : 'v00_0A_0E/Contactors/Compare To Constant11'
+ * '<S6>'   : 'v00_0A_0E/Contactors/Compare To Constant12'
+ * '<S7>'   : 'v00_0A_0E/Contactors/Compare To Constant13'
+ * '<S8>'   : 'v00_0A_0E/Contactors/Compare To Constant14'
+ * '<S9>'   : 'v00_0A_0E/Contactors/Compare To Constant15'
+ * '<S10>'  : 'v00_0A_0E/Contactors/Compare To Constant16'
+ * '<S11>'  : 'v00_0A_0E/Contactors/Compare To Constant17'
+ * '<S12>'  : 'v00_0A_0E/Contactors/Compare To Constant18'
+ * '<S13>'  : 'v00_0A_0E/Contactors/Compare To Constant19'
+ * '<S14>'  : 'v00_0A_0E/Contactors/Compare To Constant2'
+ * '<S15>'  : 'v00_0A_0E/Contactors/Compare To Constant20'
+ * '<S16>'  : 'v00_0A_0E/Contactors/Compare To Constant21'
+ * '<S17>'  : 'v00_0A_0E/Contactors/Compare To Constant22'
+ * '<S18>'  : 'v00_0A_0E/Contactors/Compare To Constant23'
+ * '<S19>'  : 'v00_0A_0E/Contactors/Compare To Constant24'
+ * '<S20>'  : 'v00_0A_0E/Contactors/Compare To Constant25'
+ * '<S21>'  : 'v00_0A_0E/Contactors/Compare To Constant26'
+ * '<S22>'  : 'v00_0A_0E/Contactors/Compare To Constant27'
+ * '<S23>'  : 'v00_0A_0E/Contactors/Compare To Constant28'
+ * '<S24>'  : 'v00_0A_0E/Contactors/Compare To Constant29'
+ * '<S25>'  : 'v00_0A_0E/Contactors/Compare To Constant3'
+ * '<S26>'  : 'v00_0A_0E/Contactors/Compare To Constant30'
+ * '<S27>'  : 'v00_0A_0E/Contactors/Compare To Constant4'
+ * '<S28>'  : 'v00_0A_0E/Contactors/Compare To Constant5'
+ * '<S29>'  : 'v00_0A_0E/Contactors/Compare To Constant6'
+ * '<S30>'  : 'v00_0A_0E/Contactors/Compare To Constant7'
+ * '<S31>'  : 'v00_0A_0E/Contactors/Compare To Constant8'
+ * '<S32>'  : 'v00_0A_0E/Contactors/Compare To Constant9'
+ * '<S33>'  : 'v00_0A_0E/Contactors/Contactor_StateMachine'
  */
-#endif                                 /* RTW_HEADER_Contactors_h_ */
+#endif                                 /* Contactors_h_ */

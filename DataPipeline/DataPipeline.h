@@ -7,19 +7,19 @@
  *
  * Code generation for model "DataPipeline".
  *
- * Model version              : 4.0
- * Simulink Coder version : 9.8 (R2022b) 13-May-2022
- * C source code generated on : Mon Oct  7 18:52:37 2024
+ * Model version              : 7.4
+ * Simulink Coder version : 24.1 (R2024a) 19-Nov-2023
+ * C source code generated on : Sat Mar  8 13:08:13 2025
  *
  * Target selection: grt.tlc
  * Note: GRT includes extra infrastructure and instrumentation for prototyping
  * Embedded hardware selection: STMicroelectronics->Cortex_M3
  * Code generation objective: Execution efficiency
- * Validation result: Passed (9), Warning (1), Error (0)
+ * Validation result: All passed
  */
 
-#ifndef RTW_HEADER_DataPipeline_h_
-#define RTW_HEADER_DataPipeline_h_
+#ifndef DataPipeline_h_
+#define DataPipeline_h_
 #ifndef DataPipeline_COMMON_INCLUDES_
 #define DataPipeline_COMMON_INCLUDES_
 #include "rtwtypes.h"
@@ -59,6 +59,7 @@ typedef struct {
 
 /* Block states (default storage) for system '<Root>' */
 typedef struct {
+  int32_T Selector_DIMS1[2];           /* '<S1>/Selector' */
   int16_T Mean_AccVal;                 /* '<S1>/Mean' */
   int16_T Mean1_AccVal;                /* '<S1>/Mean1' */
 } DW_DataPipeline_T;
@@ -100,7 +101,7 @@ typedef struct {
   uint32_T RecordedCycleCount;         /* '<Root>/RecordedCycleCount' */
   int16_T Temperatures2_C[7];          /* '<Root>/Temperatures2_C' */
   int16_T Temperatures1_C[7];          /* '<Root>/Temperatures1_C' */
-  int32_T VoltageSense_mV[18];         /* '<Root>/VoltageSense_mV' */
+  int32_T VoltageSense_mV[100];        /* '<Root>/VoltageSense_mV' */
   int32_T CurrentSense_mA;             /* '<Root>/CurrentSense_mA' */
   real32_T Inport1;                    /* '<Root>/Inport1' */
 } ExtU_DataPipeline_T;
@@ -177,18 +178,17 @@ extern RT_MODEL_DataPipeline_T *const DataPipeline_M;
  * MATLAB hilite_system command to trace the generated code back
  * to the parent model.  For example,
  *
- * hilite_system('marvelMBD_v00_0A_0D_exported/DataPipeline')    - opens subsystem marvelMBD_v00_0A_0D_exported/DataPipeline
- * hilite_system('marvelMBD_v00_0A_0D_exported/DataPipeline/Kp') - opens and selects block Kp
+ * hilite_system('v00_0A_0E/DataPipeline')    - opens subsystem v00_0A_0E/DataPipeline
+ * hilite_system('v00_0A_0E/DataPipeline/Kp') - opens and selects block Kp
  *
  * Here is the system hierarchy for this model
  *
- * '<Root>' : 'marvelMBD_v00_0A_0D_exported'
- * '<S1>'   : 'marvelMBD_v00_0A_0D_exported/DataPipeline'
- * '<S2>'   : 'marvelMBD_v00_0A_0D_exported/DataPipeline/AverageFunction'
- * '<S3>'   : 'marvelMBD_v00_0A_0D_exported/DataPipeline/DynamicCurrentLimits_perParallelCell'
- * '<S4>'   : 'marvelMBD_v00_0A_0D_exported/DataPipeline/GetN3'
- * '<S5>'   : 'marvelMBD_v00_0A_0D_exported/DataPipeline/I2t_perParallelCell'
- * '<S6>'   : 'marvelMBD_v00_0A_0D_exported/DataPipeline/MaximumFunction'
- * '<S7>'   : 'marvelMBD_v00_0A_0D_exported/DataPipeline/MinimumFunction'
+ * '<Root>' : 'v00_0A_0E'
+ * '<S1>'   : 'v00_0A_0E/DataPipeline'
+ * '<S2>'   : 'v00_0A_0E/DataPipeline/AverageFunction'
+ * '<S3>'   : 'v00_0A_0E/DataPipeline/DynamicCurrentLimits_perParallelCell'
+ * '<S4>'   : 'v00_0A_0E/DataPipeline/I2t_perParallelCell'
+ * '<S5>'   : 'v00_0A_0E/DataPipeline/MaximumFunction'
+ * '<S6>'   : 'v00_0A_0E/DataPipeline/MinimumFunction'
  */
-#endif                                 /* RTW_HEADER_DataPipeline_h_ */
+#endif                                 /* DataPipeline_h_ */
