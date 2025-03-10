@@ -234,7 +234,7 @@ typedef struct {
 #define DEFINED_TYPEDEF_FOR_VoltageSenseBus_
 
 typedef struct {
-  int32_T Voltages_mV[18];
+  int32_T Voltages_mV[100];
   int32_T mV_min;
   int32_T mV_max;
   int32_T VoltageDelta_mV;

@@ -7,15 +7,15 @@
  *
  * Code generation for model "DataPipeline".
  *
- * Model version              : 4.0
- * Simulink Coder version : 9.8 (R2022b) 13-May-2022
- * C source code generated on : Mon Oct  7 18:52:37 2024
+ * Model version              : 7.4
+ * Simulink Coder version : 24.1 (R2024a) 19-Nov-2023
+ * C source code generated on : Sat Mar  8 13:08:13 2025
  *
  * Target selection: grt.tlc
  * Note: GRT includes extra infrastructure and instrumentation for prototyping
  * Embedded hardware selection: STMicroelectronics->Cortex_M3
  * Code generation objective: Execution efficiency
- * Validation result: Passed (9), Warning (1), Error (0)
+ * Validation result: All passed
  */
 
 #include "DataPipeline.h"
@@ -29,7 +29,6 @@
 #include "multiword_types.h"
 #include "DataPipeline_types.h"
 #include "DataPipeline_private.h"
-#include <math.h>
 
 /* Block signals (default storage) */
 B_DataPipeline_T DataPipeline_B;
@@ -47,7 +46,11 @@ ExtY_DataPipeline_T DataPipeline_Y;
 static RT_MODEL_DataPipeline_T DataPipeline_M_;
 RT_MODEL_DataPipeline_T *const DataPipeline_M = &DataPipeline_M_;
 const DataPipelineBus DataPipeline_rtZDataPipelineBus = { 0,/* Current_mA */
-  { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },/* Voltages_mV */
+  { { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    },                                 /* VoltageSense_mV */
     0,                                 /* mV_min */
     0,                                 /* mV_max */
     0                                  /* VoltageDelta_mV */
@@ -385,17 +388,33 @@ void DataPipeline_step(void)
   int64m_T tmp_4;
   int64m_T tmp_5;
   real_T rtb_Temperature_C;
+  int32_T rtb_VoltageSense_mV[100];
   int32_T i;
+  int32_T loop_ub;
   int32_T maxV_1;
-  int32_T minV_1;
+  int32_T u1;
   uint32_T tmp_1;
   uint32_T tmp_2;
+  int16_T Temperatures1_C;
+  int16_T Temperatures2_C;
   int16_T maxV;
   int16_T maxV_0;
   int16_T minV;
   int16_T minV_0;
-  int16_T tmp_6;
-  int16_T u1_tmp;
+
+  /* Selector: '<S1>/Selector' incorporates:
+   *  Inport: '<Root>/VoltageSense_mV'
+   *  Inport: '<Root>/nCells_Series'
+   */
+  DataPipeline_DW.Selector_DIMS1[0] = DataPipeline_U.nCells_series;
+  DataPipeline_DW.Selector_DIMS1[1] = 1;
+  loop_ub = DataPipeline_U.nCells_series - 1;
+  if (loop_ub >= 0) {
+    memcpy(&rtb_VoltageSense_mV[0], &DataPipeline_U.VoltageSense_mV[0],
+           (uint32_T)(loop_ub + 1) * sizeof(int32_T));
+  }
+
+  /* End of Selector: '<S1>/Selector' */
 
   /* MinMax: '<S1>/Min3' incorporates:
    *  Inport: '<Root>/Temperatures1_C'
@@ -409,16 +428,15 @@ void DataPipeline_step(void)
   for (i = 0; i < 6; i++) {
     /* MinMax: '<S1>/Min3' incorporates:
      *  Inport: '<Root>/Temperatures1_C'
-     *  MinMax: '<S1>/Min2'
      */
-    u1_tmp = DataPipeline_U.Temperatures1_C[i + 1];
-    if (maxV < u1_tmp) {
-      maxV = u1_tmp;
+    Temperatures1_C = DataPipeline_U.Temperatures1_C[i + 1];
+    if (maxV < Temperatures1_C) {
+      maxV = Temperatures1_C;
     }
 
     /* MinMax: '<S1>/Min2' */
-    if (minV > u1_tmp) {
-      minV = u1_tmp;
+    if (minV > Temperatures1_C) {
+      minV = Temperatures1_C;
     }
   }
 
@@ -441,13 +459,14 @@ void DataPipeline_step(void)
    *  MinMax: '<S1>/Min3'
    *  Sum: '<S1>/Add1'
    */
-  tmp_6 = (int16_T)(maxV - minV);
+  Temperatures1_C = (int16_T)(maxV - minV);
 
   /* BusCreator: '<S1>/Bus Creator1' incorporates:
    *  Concatenate: '<S1>/Vector Concatenate'
    *  Sum: '<S1>/Subtract1'
    */
-  DataPipeline_Y.DataPipelineb.TemperatureSenseBus[0].TemperatureDelta_C = tmp_6;
+  DataPipeline_Y.DataPipelineb.TemperatureSenseBus[0].TemperatureDelta_C =
+    Temperatures1_C;
 
   /* MinMax: '<S1>/Min4' incorporates:
    *  Inport: '<Root>/Temperatures2_C'
@@ -461,16 +480,15 @@ void DataPipeline_step(void)
   for (i = 0; i < 6; i++) {
     /* MinMax: '<S1>/Min4' incorporates:
      *  Inport: '<Root>/Temperatures2_C'
-     *  MinMax: '<S1>/Min1'
      */
-    u1_tmp = DataPipeline_U.Temperatures2_C[i + 1];
-    if (maxV_0 < u1_tmp) {
-      maxV_0 = u1_tmp;
+    Temperatures2_C = DataPipeline_U.Temperatures2_C[i + 1];
+    if (maxV_0 < Temperatures2_C) {
+      maxV_0 = Temperatures2_C;
     }
 
     /* MinMax: '<S1>/Min1' */
-    if (minV_0 > u1_tmp) {
-      minV_0 = u1_tmp;
+    if (minV_0 > Temperatures2_C) {
+      minV_0 = Temperatures2_C;
     }
   }
 
@@ -493,39 +511,34 @@ void DataPipeline_step(void)
    *  MinMax: '<S1>/Min4'
    *  Sum: '<S1>/Add2'
    */
-  u1_tmp = (int16_T)(maxV_0 - minV_0);
+  Temperatures2_C = (int16_T)(maxV_0 - minV_0);
 
   /* BusCreator: '<S1>/Bus Creator2' incorporates:
    *  Concatenate: '<S1>/Vector Concatenate'
    *  Sum: '<S1>/Subtract2'
    */
   DataPipeline_Y.DataPipelineb.TemperatureSenseBus[1].TemperatureDelta_C =
-    u1_tmp;
+    Temperatures2_C;
 
   /* MinMax: '<S1>/MinMax2' incorporates:
-   *  Inport: '<Root>/VoltageSense_mV'
+   *  Selector: '<S1>/Selector'
    */
-  minV_1 = DataPipeline_U.VoltageSense_mV[0];
+  loop_ub = rtb_VoltageSense_mV[0];
+  for (i = 1; i < DataPipeline_DW.Selector_DIMS1[0]; i++) {
+    u1 = rtb_VoltageSense_mV[i];
+    if (loop_ub > u1) {
+      loop_ub = u1;
+    }
+  }
 
   /* MinMax: '<S1>/MinMax' incorporates:
-   *  Inport: '<Root>/VoltageSense_mV'
+   *  Selector: '<S1>/Selector'
    */
-  maxV_1 = DataPipeline_U.VoltageSense_mV[0];
-  for (i = 0; i < 17; i++) {
-    int32_T u1_tmp_0;
-
-    /* MinMax: '<S1>/MinMax2' incorporates:
-     *  Inport: '<Root>/VoltageSense_mV'
-     *  MinMax: '<S1>/MinMax'
-     */
-    u1_tmp_0 = DataPipeline_U.VoltageSense_mV[i + 1];
-    if (minV_1 > u1_tmp_0) {
-      minV_1 = u1_tmp_0;
-    }
-
-    /* MinMax: '<S1>/MinMax' */
-    if (maxV_1 < u1_tmp_0) {
-      maxV_1 = u1_tmp_0;
+  maxV_1 = rtb_VoltageSense_mV[0];
+  for (i = 1; i < DataPipeline_DW.Selector_DIMS1[0]; i++) {
+    u1 = rtb_VoltageSense_mV[i];
+    if (maxV_1 < u1) {
+      maxV_1 = u1;
     }
   }
 
@@ -533,16 +546,17 @@ void DataPipeline_step(void)
    *  MinMax: '<S1>/MinMax'
    *  MinMax: '<S1>/MinMax2'
    */
-  DataPipeline_Y.DataPipelineb.VoltageSenseBus.VoltageDelta_mV = maxV_1 - minV_1;
+  DataPipeline_Y.DataPipelineb.VoltageSenseBus.VoltageDelta_mV = maxV_1 -
+    loop_ub;
 
   /* BusCreator: '<S1>/Bus Creator' incorporates:
    *  Inport: '<Root>/VoltageSense_mV'
    *  MinMax: '<S1>/MinMax'
    *  MinMax: '<S1>/MinMax2'
    */
-  memcpy(&DataPipeline_Y.DataPipelineb.VoltageSenseBus.Voltages_mV[0],
-         &DataPipeline_U.VoltageSense_mV[0], 18U * sizeof(int32_T));
-  DataPipeline_Y.DataPipelineb.VoltageSenseBus.mV_min = minV_1;
+  memcpy(&DataPipeline_Y.DataPipelineb.VoltageSenseBus.Voltages_mV[0],                     //TODO find an effective way instead of theis redundant memcpy, for now changing it to ncells_series manually
+         &DataPipeline_U.VoltageSense_mV[0], DataPipeline_U.nCells_series * sizeof(int32_T));
+  DataPipeline_Y.DataPipelineb.VoltageSenseBus.mV_min = loop_ub;
   DataPipeline_Y.DataPipelineb.VoltageSenseBus.mV_max = maxV_1;
 
   /* MATLAB Function: '<S1>/MaximumFunction' incorporates:
@@ -567,10 +581,10 @@ void DataPipeline_step(void)
      DataPipeline_B.sf_MinimumFunction.Min);
 
   /* Sum: '<S1>/Add1' */
-  DataPipeline_Y.DataPipelineb.DeltaTemperatureGroup1_C = tmp_6;
+  DataPipeline_Y.DataPipelineb.DeltaTemperatureGroup1_C = Temperatures1_C;
 
   /* Sum: '<S1>/Add2' */
-  DataPipeline_Y.DataPipelineb.DeltaTemperatureGroup2_C = u1_tmp;
+  DataPipeline_Y.DataPipelineb.DeltaTemperatureGroup2_C = Temperatures2_C;
 
   /* Switch: '<S1>/Switch' incorporates:
    *  Constant: '<S1>/Constant'
@@ -601,25 +615,21 @@ void DataPipeline_step(void)
    *  Inport: '<Root>/Temperatures1_C'
    */
   DataPipeline_DW.Mean_AccVal = DataPipeline_U.Temperatures1_C[0];
-  minV_1 = 1;
 
   /* S-Function (sdspstatfcns): '<S1>/Mean1' incorporates:
    *  Inport: '<Root>/Temperatures2_C'
    */
   DataPipeline_DW.Mean1_AccVal = DataPipeline_U.Temperatures2_C[0];
-  maxV_1 = 1;
   for (i = 5; i >= 0; i--) {
     /* S-Function (sdspstatfcns): '<S1>/Mean' incorporates:
      *  Inport: '<Root>/Temperatures1_C'
      */
-    DataPipeline_DW.Mean_AccVal += DataPipeline_U.Temperatures1_C[minV_1];
-    minV_1++;
+    DataPipeline_DW.Mean_AccVal += DataPipeline_U.Temperatures1_C[6 - i];
 
     /* S-Function (sdspstatfcns): '<S1>/Mean1' incorporates:
      *  Inport: '<Root>/Temperatures2_C'
      */
-    DataPipeline_DW.Mean1_AccVal += DataPipeline_U.Temperatures2_C[maxV_1];
-    maxV_1++;
+    DataPipeline_DW.Mean1_AccVal += DataPipeline_U.Temperatures2_C[6 - i];
   }
 
   /* MATLAB Function: '<S1>/AverageFunction' incorporates:

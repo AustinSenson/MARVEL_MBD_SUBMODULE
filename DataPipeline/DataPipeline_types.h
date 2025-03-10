@@ -7,19 +7,19 @@
  *
  * Code generation for model "DataPipeline".
  *
- * Model version              : 4.4
- * Simulink Coder version : 9.8 (R2022b) 13-May-2022
- * C source code generated on : Fri Oct 11 19:07:28 2024
+ * Model version              : 7.4
+ * Simulink Coder version : 24.1 (R2024a) 19-Nov-2023
+ * C source code generated on : Sat Mar  8 13:08:13 2025
  *
  * Target selection: grt.tlc
  * Note: GRT includes extra infrastructure and instrumentation for prototyping
  * Embedded hardware selection: STMicroelectronics->Cortex_M3
  * Code generation objective: Execution efficiency
- * Validation result: Passed (9), Warning (1), Error (0)
+ * Validation result: All passed
  */
 
-#ifndef RTW_HEADER_DataPipeline_types_h_
-#define RTW_HEADER_DataPipeline_types_h_
+#ifndef DataPipeline_types_h_
+#define DataPipeline_types_h_
 #include "rtwtypes.h"
 #ifndef DEFINED_TYPEDEF_FOR_Temperature_
 #define DEFINED_TYPEDEF_FOR_Temperature_
@@ -234,7 +234,7 @@ typedef struct {
 #define DEFINED_TYPEDEF_FOR_VoltageSenseBus_
 
 typedef struct {
-  int32_T Voltages_mV[18];
+  int32_T Voltages_mV[100];
   int32_T mV_min;
   int32_T mV_max;
   int32_T VoltageDelta_mV;
@@ -312,4 +312,4 @@ typedef struct P_DataPipeline_T_ P_DataPipeline_T;
 /* Forward declaration for rtModel */
 typedef struct tag_RTM_DataPipeline_T RT_MODEL_DataPipeline_T;
 
-#endif                                 /* RTW_HEADER_DataPipeline_types_h_ */
+#endif                                 /* DataPipeline_types_h_ */

@@ -524,7 +524,7 @@ void CellBalancing_initialize(void)
     CellBalancing_DW.is_active_c3_CellBalancing = 0U;
     CellBalancing_DW.is_c3_CellBalancing = CellBalancin_IN_NO_ACTIVE_CHILD;
     CellBalancing_DW.i = 0.0;
-    for (i = 0; i < 18; i++) {
+    for (i = 0; i < 100; i++) {
       /* SystemInitialize for Outport: '<Root>/BalanceCmd' incorporates:
        *  Chart: '<S1>/BalancingStateMachine'
        */

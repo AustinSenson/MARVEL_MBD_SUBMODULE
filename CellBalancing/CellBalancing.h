@@ -77,7 +77,7 @@ typedef struct {
 
 /* External outputs (root outports fed by signals with default storage) */
 typedef struct {
-  int8_T BalanceCmd[18];               /* '<Root>/BalanceCmd' */
+  int8_T BalanceCmd[100];               /* '<Root>/BalanceCmd' */
   CellBalancingOutputBus CellBalancingOutput;/* '<Root>/CellBalancingOutput' */
 } ExtY_CellBalancing_T;
 

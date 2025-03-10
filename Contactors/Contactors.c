@@ -7,15 +7,15 @@
  *
  * Code generation for model "Contactors".
  *
- * Model version              : 4.0
- * Simulink Coder version : 9.8 (R2022b) 13-May-2022
- * C source code generated on : Mon Oct  7 18:50:06 2024
+ * Model version              : 7.4
+ * Simulink Coder version : 24.1 (R2024a) 19-Nov-2023
+ * C source code generated on : Sat Mar  8 13:37:28 2025
  *
  * Target selection: grt.tlc
  * Note: GRT includes extra infrastructure and instrumentation for prototyping
  * Embedded hardware selection: STMicroelectronics->Cortex_M3
  * Code generation objective: Execution efficiency
- * Validation result: Passed (9), Warning (1), Error (0)
+ * Validation result: All passed
  */
 
 #include "Contactors.h"
@@ -27,7 +27,7 @@
 #define Con_IN_ChangeState01_to_Opening ((uint8_T)1U)
 #define Con_IN_PreCharging_Substate_New ((uint8_T)11U)
 #define Con_IN_PreCharging_Substate_Old ((uint8_T)12U)
-#define Contacto_IN_NegContact_Check_02 ((uint8_T)9U)
+#define Contacto_IN_NegContact_Check_02 ((uint8_T)8U)
 #define Contactors_IN_Closed_Substate  ((uint8_T)1U)
 #define Contactors_IN_IntState         ((uint8_T)2U)
 #define Contactors_IN_IntState1        ((uint8_T)2U)
@@ -36,11 +36,11 @@
 #define Contactors_IN_IntState12       ((uint8_T)4U)
 #define Contactors_IN_IntState13       ((uint8_T)5U)
 #define Contactors_IN_IntState14       ((uint8_T)3U)
-#define Contactors_IN_IntState14_c     ((uint8_T)6U)
+#define Contactors_IN_IntState14_d     ((uint8_T)6U)
 #define Contactors_IN_IntState15       ((uint8_T)4U)
-#define Contactors_IN_IntState15_b     ((uint8_T)7U)
+#define Contactors_IN_IntState15_g     ((uint8_T)7U)
 #define Contactors_IN_IntState16       ((uint8_T)5U)
-#define Contactors_IN_IntState16_m     ((uint8_T)8U)
+#define Contactors_IN_IntState16_g     ((uint8_T)8U)
 #define Contactors_IN_IntState2        ((uint8_T)3U)
 #define Contactors_IN_IntState3        ((uint8_T)4U)
 #define Contactors_IN_IntState4        ((uint8_T)5U)
@@ -50,10 +50,10 @@
 #define Contactors_IN_IntState8        ((uint8_T)6U)
 #define Contactors_IN_IntState8_o      ((uint8_T)9U)
 #define Contactors_IN_IntState9        ((uint8_T)7U)
-#define Contactors_IN_IntState9_k      ((uint8_T)9U)
+#define Contactors_IN_IntState9_j      ((uint8_T)9U)
 #define Contactors_IN_NO_ACTIVE_CHILD  ((uint8_T)0U)
 #define Contactors_IN_NegContact_Check ((uint8_T)10U)
-#define Contactors_IN_Open_Substate    ((uint8_T)8U)
+#define Contactors_IN_Open_Substate    ((uint8_T)9U)
 #define Contactors_IN_PermanentFail    ((uint8_T)10U)
 #define Contactors_IN_PosContact_Check ((uint8_T)11U)
 #define Contactors_IN_PreCharge_Check01 ((uint8_T)12U)
@@ -77,7 +77,7 @@ static RT_MODEL_Contactors_T Contactors_M_;
 RT_MODEL_Contactors_T *const Contactors_M = &Contactors_M_;
 
 /* Forward declaration for local functions */
-static void exit_internal_PreCharging_Sub_m(void);
+static void exit_internal_PreCharging_Sub_l(void);
 static void Contac_PreCharging_Substate_Old(void);
 static void Contactors_Open_Substate(void);
 static void exit_internal_PreCharging_Subst(void);
@@ -105,7 +105,7 @@ const ProtectionState_Out Contactors_rtZProtectionState_O = { NoError,/* Thermal
 };
 
 /* Function for Chart: '<S1>/Contactor_StateMachine' */
-static void exit_internal_PreCharging_Sub_m(void)
+static void exit_internal_PreCharging_Sub_l(void)
 {
   Contactors_DW.is_PreCharging_Substate_Old = Contactors_IN_NO_ACTIVE_CHILD;
 }
@@ -113,13 +113,14 @@ static void exit_internal_PreCharging_Sub_m(void)
 /* Function for Chart: '<S1>/Contactor_StateMachine' */
 static void Contac_PreCharging_Substate_Old(void)
 {
+  int32_T tmp;
   /* Inport: '<Root>/ProtectionOutput' incorporates:
    *  Inport: '<Root>/DataPipeline'
    */
   if ((Contactors_U.ProtectionOutput.ThermalRunaway == Error) ||
       (Contactors_U.ProtectionOutput.ShortCircuitDetect == Error) ||
       Contactors_U.DataPipeline.VCU.EmergencyDisconnectEn) {
-    exit_internal_PreCharging_Sub_m();
+    exit_internal_PreCharging_Sub_l();
     Contactors_DW.is_ContactorOperations = Contactors_IN_PermanentFail;
 
     /* Update for Outport: '<Root>/NegContactors' */
@@ -142,9 +143,9 @@ static void Contac_PreCharging_Substate_Old(void)
     }
 
     /* Inport: '<Root>/Thresholds' */
-    if ((real_T)(uint32_T)((int32_T)Contactors_DW.durationCounter_1 * Contactors_U.looptimeContactors) >
+    if ((uint32_T)((int32_T)Contactors_DW.durationCounter_1 * Contactors_U.looptimeContactors) > (uint32_T)
         Contactors_U.Thresholds.PreToOpeningSubstate_msec) {
-      exit_internal_PreCharging_Sub_m();
+      exit_internal_PreCharging_Sub_l();
       Contactors_DW.is_ContactorOperations = Contacto_IN_NegContact_Check_02;
 
       /* Update for Outport: '<Root>/NegContactors' */
@@ -252,7 +253,6 @@ static void Contac_PreCharging_Substate_Old(void)
             /* Outport: '<Root>/ContactorsState' */
             Contactors_Y.ContactorsState = PreCharging_PosContactorClosed;
           } else {
-            int32_T tmp;
             if (Contactors_U.DataPipeline.Current_mA < 0) {
               if (Contactors_U.DataPipeline.Current_mA <= MIN_int32_T) {
                 tmp = MAX_int32_T;
@@ -278,7 +278,7 @@ static void Contac_PreCharging_Substate_Old(void)
         }
         break;
 
-       case Contactors_IN_IntState14_c:
+       case Contactors_IN_IntState14_d:
         /* Inport: '<Root>/PosContactors_FB' */
         if (Contactors_B.PreIntegratedTime >
             Contactors_U.Thresholds.ContCutoffTime_msec) {
@@ -304,7 +304,7 @@ static void Contac_PreCharging_Substate_Old(void)
         }
         break;
 
-       case Contactors_IN_IntState15_b:
+       case Contactors_IN_IntState15_g:
         /* Inport: '<Root>/PosContactors_FB' */
         if (Contactors_B.PreIntegratedTime >
             Contactors_U.Thresholds.ContCutoffTime_msec) {
@@ -323,7 +323,7 @@ static void Contac_PreCharging_Substate_Old(void)
         }
         break;
 
-       case Contactors_IN_IntState16_m:
+       case Contactors_IN_IntState16_g:
         /* Inport: '<Root>/PreChargeContactors_FB' */
         if (Contactors_B.PreIntegratedTime >
             Contactors_U.Thresholds.ContCutoffTime_msec) {
@@ -343,7 +343,7 @@ static void Contac_PreCharging_Substate_Old(void)
         }
         break;
 
-       case Contactors_IN_IntState9_k:
+       case Contactors_IN_IntState9_j:
         /* Inport: '<Root>/NegContactors_FB' */
         if (Contactors_B.PreIntegratedTime >
             Contactors_U.Thresholds.ContCutoffTime_msec) {
@@ -379,7 +379,7 @@ static void Contac_PreCharging_Substate_Old(void)
         /* Inport: '<Root>/NegContactors_FB' */
         if ((int32_T)Contactors_U.NegContactors_FB == 1) {
           Contactors_B.PreTimeReset = 1.0;
-          Contactors_DW.is_PreCharging_Substate_Old = Contactors_IN_IntState9_k;
+          Contactors_DW.is_PreCharging_Substate_Old = Contactors_IN_IntState9_j;
         } else if ((int32_T)Contactors_U.NegContactors_FB == 0) {
           Contactors_B.PreTimeReset = 1.0;
           Contactors_DW.is_PreCharging_Substate_Old = Contactors_IN_IntState10;
@@ -396,16 +396,15 @@ static void Contac_PreCharging_Substate_Old(void)
         /* Inport: '<Root>/PosContactors_FB' */
         if ((int32_T)Contactors_U.PosContactors_FB == 0) {
           Contactors_B.PreTimeReset = 1.0;
-          Contactors_DW.is_PreCharging_Substate_Old = Contactors_IN_IntState15_b;
+          Contactors_DW.is_PreCharging_Substate_Old = Contactors_IN_IntState15_g;
         } else if ((int32_T)Contactors_U.PosContactors_FB == 1) {
           Contactors_B.PreTimeReset = 1.0;
-          Contactors_DW.is_PreCharging_Substate_Old = Contactors_IN_IntState14_c;
+          Contactors_DW.is_PreCharging_Substate_Old = Contactors_IN_IntState14_d;
         }
         break;
 
        case Contactors_IN_PreCharge_Check01:
         {
-          int32_T tmp;
 
           /* Update for Outport: '<Root>/PreChargeContactors' */
           Contactors_Y.PreChargeContactors = Closed;
@@ -466,7 +465,7 @@ static void Contac_PreCharging_Substate_Old(void)
           Contactors_DW.is_ContactorOperations = Contactors_IN_IntState14;
         } else if ((int32_T)Contactors_U.PreChargeContactors_FB == 1) {
           Contactors_B.PreTimeReset = 1.0;
-          Contactors_DW.is_PreCharging_Substate_Old = Contactors_IN_IntState16_m;
+          Contactors_DW.is_PreCharging_Substate_Old = Contactors_IN_IntState16_g;
         }
         break;
 
@@ -560,15 +559,16 @@ static void exit_internal_PreCharging_Subst(void)
 /* Function for Chart: '<S1>/Contactor_StateMachine' */
 static void Contac_PreCharging_Substate_New(void)
 {
+  int32_T tmp;
   if (Contactors_B.Flags_Detection) {
-    Contactors_DW.durationCounter_1_f = 0U;
+    Contactors_DW.durationCounter_1_e = 0U;
   }
 
   /* Inport: '<Root>/Thresholds' incorporates:
    *  Inport: '<Root>/DataPipeline'
    *  Inport: '<Root>/ProtectionOutput'
    */
-  if ((real_T)(uint32_T)((int32_T)Contactors_DW.durationCounter_1_f * Contactors_U.looptimeContactors) >
+  if ((uint32_T)((int32_T)Contactors_DW.durationCounter_1_e * Contactors_U.looptimeContactors) > (uint32_T)
       Contactors_U.Thresholds.PreToOpeningSubstate_msec) {
     exit_internal_PreCharging_Subst();
     Contactors_DW.is_ContactorOperations = Contacto_IN_NegContact_Check_02;
@@ -684,7 +684,6 @@ static void Contac_PreCharging_Substate_New(void)
           /* Outport: '<Root>/ContactorsState' */
           Contactors_Y.ContactorsState = PreCharging_PosContactorClosed;
         } else {
-          int32_T tmp;
           if (Contactors_U.DataPipeline.Current_mA < 0) {
             /* Inport: '<Root>/DataPipeline' */
             if (Contactors_U.DataPipeline.Current_mA <= MIN_int32_T) {
@@ -697,9 +696,7 @@ static void Contac_PreCharging_Substate_New(void)
             tmp = Contactors_U.DataPipeline.Current_mA;
           }
 
-          if ((tmp > Contactors_U.Thresholds.PreChargeEndMaxCurrent_mA) ||
-              (Contactors_B.Add >
-               Contactors_U.Thresholds.PreChargeVoltageDelta_mV)) {
+          if (tmp > Contactors_U.Thresholds.PreChargeEndMaxCurrent_mA) {
             Contactors_DW.is_PreCharging_Substate_New =
               Contactors_IN_PreCharge_Check01;
             Contactors_B.PreTimeReset = 1.0;
@@ -869,7 +866,6 @@ static void Contac_PreCharging_Substate_New(void)
           Contactors_B.PreTimeReset = 1.0;
           Contactors_DW.is_PreCharging_Substate_New = Contactors_IN_IntState5;
         } else {
-          int32_T tmp;
           if (Contactors_U.DataPipeline.Current_mA < 0) {
             /* Inport: '<Root>/DataPipeline' */
             if (Contactors_U.DataPipeline.Current_mA <= MIN_int32_T) {
@@ -882,9 +878,7 @@ static void Contac_PreCharging_Substate_New(void)
             tmp = Contactors_U.DataPipeline.Current_mA;
           }
 
-          if ((tmp < Contactors_U.Thresholds.PreChargeEndMaxCurrent_mA) &&
-              (Contactors_B.Add <
-               Contactors_U.Thresholds.PreChargeVoltageDelta_mV)) {
+          if (tmp < Contactors_U.Thresholds.PreChargeEndMaxCurrent_mA) {
             Contactors_B.PreTimeReset = 1.0;
             Contactors_DW.is_PreCharging_Substate_New = Contactors_IN_IntState3;
           } else if (Contactors_B.PreIntegratedTime >
@@ -956,12 +950,10 @@ static void Contac_PreCharging_Substate_New(void)
 /* Model step function */
 void Contactors_step(void)
 {
-  int32_T i;
-  int32_T tmp;
   boolean_T rtb_NOT;
+  ProtectionFlags tmp;
   ProtectionFlags tmp_0;
   ProtectionFlags tmp_1;
-  ProtectionFlags tmp_2;
 
   /* Switch: '<S1>/Switch' incorporates:
    *  Inport: '<Root>/ProtectionOutput'
@@ -969,21 +961,20 @@ void Contactors_step(void)
    *  Switch: '<S1>/Switch1'
    */
   if (Contactors_U.Thresholds.AdditionalProtectionEn) {
-    tmp_0 = Contactors_U.ProtectionOutput.TemperatureGradient;
-    tmp_1 = Contactors_U.ProtectionOutput.SuddenVoltageDrop;
+    tmp = Contactors_U.ProtectionOutput.TemperatureGradient;
+    tmp_0 = Contactors_U.ProtectionOutput.SuddenVoltageDrop;
   } else {
+    tmp = Contactors_ConstB.DataTypeConversion9;
     tmp_0 = Contactors_ConstB.DataTypeConversion9;
-    tmp_1 = Contactors_ConstB.DataTypeConversion9;
   }
-
-  /* Switch: '<S1>/Switch2' incorporates:
-   *  Inport: '<Root>/ProtectionOutput'
-   *  Inport: '<Root>/Thresholds'
-   */
-  if (Contactors_U.Thresholds.HighImbalanceFlagEn) {
-    tmp_2 = Contactors_U.ProtectionOutput.HighImbalanceFlag;
+ /* Switch: '<S1>/Switch2' incorporates:
+  *  Inport: '<Root>/ProtectionOutput'
+  *  Inport: '<Root>/Thresholds'
+  */
+ if (Contactors_U.Thresholds.HighImbalanceFlagEn) {
+   tmp_1 = Contactors_U.ProtectionOutput.HighImbalanceFlag;
   } else {
-    tmp_2 = Contactors_ConstB.DataTypeConversion9;
+    tmp_1 = Contactors_ConstB.DataTypeConversion9;
   }
 
   /* Logic: '<S1>/AND' incorporates:
@@ -1100,13 +1091,12 @@ void Contactors_step(void)
     Contactors_U.ProtectionOutput.eFuseDischargeFlag < 2) && ((int32_T)
     Contactors_U.ProtectionOutput.TempOverallState != 2) && ((int32_T)
     Contactors_U.ProtectionOutput.ShortCircuitDetect != 2) && ((int32_T)
-    Contactors_U.ProtectionOutput.ThermalRunaway != 2) && ((int32_T)tmp_2 != 2) &&
-    ((int32_T)tmp_0 != 2) && ((int32_T)tmp_1 != 2) && (Contactors_U.SC_Flag != 2)
-    && (Contactors_U.Communication_Flag != 2) &&
-    (Contactors_U.ContactorError_Flag != 2) && ((int32_T)
-    Contactors_U.PermanentFail_Flag != 2) && (Contactors_U.ContactorCommand == 1)
-    && ((Contactors_U.ContactorCommand != 0) || ((int32_T)
-    Contactors_DW.Memory_PreviousInput != 0) || ((int32_T)
+    Contactors_U.ProtectionOutput.ThermalRunaway != 2) && ((int32_T)tmp_1 != 2) &&
+    ((int32_T)tmp != 2) && ((int32_T)tmp_0 != 2) && (Contactors_U.SC_Flag != 2) &&
+    (Contactors_U.Communication_Flag != 2) && (Contactors_U.ContactorError_Flag
+    != 2) && ((int32_T)Contactors_U.PermanentFail_Flag != 2) &&
+    (Contactors_U.ContactorCommand == 1) && ((Contactors_U.ContactorCommand != 0)
+    || ((int32_T)Contactors_DW.Memory_PreviousInput != 0) || ((int32_T)
     Contactors_DW.Memory1_PreviousInput != 0) || ((int32_T)
     Contactors_DW.Memory2_PreviousInput != 0) || (((int32_T)
     Contactors_U.ProtectionOutput.OCC != 1) && ((int32_T)
@@ -1120,7 +1110,7 @@ void Contactors_step(void)
   /* Logic: '<S1>/NOT' incorporates:
    *  UnitDelay: '<S1>/Unit Delay'
    */
-  rtb_NOT = !(Contactors_DW.UnitDelay_DSTATE != 0.0);
+  rtb_NOT = (Contactors_DW.UnitDelay_DSTATE == 0.0);
 
   /* DiscreteIntegrator: '<S1>/Discrete-Time Integrator' */
   if (rtb_NOT || (Contactors_DW.DiscreteTimeIntegrator_PrevRese != 0)) {
@@ -1129,20 +1119,6 @@ void Contactors_step(void)
 
   /* DiscreteIntegrator: '<S1>/Discrete-Time Integrator' */
   Contactors_B.PreIntegratedTime = Contactors_DW.DiscreteTimeIntegrator_DSTATE;
-
-  /* Sum: '<S1>/Sum of Elements' incorporates:
-   *  Inport: '<Root>/DataPipeline'
-   */
-  tmp = 0;
-  for (i = 0; i < 18; i++) {
-    tmp += Contactors_U.DataPipeline.VoltageSenseBus.Voltages_mV[i];
-  }
-
-  /* Sum: '<S1>/Add' incorporates:
-   *  Inport: '<Root>/TerminalVoltage_mV'
-   *  Sum: '<S1>/Sum of Elements'
-   */
-  Contactors_B.Add = tmp - Contactors_U.TerminalVoltage_mV;
 
   /* Chart: '<S1>/Contactor_StateMachine' incorporates:
    *  Inport: '<Root>/DataPipeline'
@@ -1207,11 +1183,11 @@ void Contactors_step(void)
         Contactors_Y.ContactorsState = PermanentFailure;
       } else {
         if (Contactors_B.Flags_Detection) {
-          Contactors_DW.durationCounter_1_b = 0U;
+          Contactors_DW.durationCounter_1_m = 0U;
         }
 
-        if ((real_T)(uint32_T)((int32_T)Contactors_DW.durationCounter_1_b * Contactors_U.looptimeContactors)
-            > Contactors_U.Thresholds.FlagDebounceTime_msec) {
+        if ((uint32_T)((int32_T)Contactors_DW.durationCounter_1_m * Contactors_U.looptimeContactors) >
+            (uint32_T)Contactors_U.Thresholds.FlagDebounceTime_msec) {
           Contactors_DW.is_ContactorOperations = Contacto_IN_NegContact_Check_02;
 
           /* Outport: '<Root>/NegContactors' */
@@ -1230,7 +1206,7 @@ void Contactors_step(void)
       if (Contactors_B.PreIntegratedTime >
           Contactors_U.Thresholds.OpenToPreChargeStateTime_msec) {
         Contactors_B.PreTimeReset = 0.0;
-        Contactors_DW.durationCounter_1_f = 0U;
+        Contactors_DW.durationCounter_1_e = 0U;
         Contactors_DW.is_ContactorOperations = Con_IN_PreCharging_Substate_New;
         Contactors_DW.is_PreCharging_Substate_New =
           Contactors_IN_NegContact_Check;
@@ -1266,7 +1242,7 @@ void Contactors_step(void)
       if (Contactors_B.PreIntegratedTime >
           Contactors_U.Thresholds.PreToClosed_Time_msec) {
         Contactors_B.PreTimeReset = 0.0;
-        Contactors_DW.durationCounter_1_b = 0U;
+        Contactors_DW.durationCounter_1_m = 0U;
         Contactors_DW.is_ContactorOperations = Contactors_IN_Closed_Substate;
 
         /* Outport: '<Root>/NegContactors' */
@@ -1356,7 +1332,7 @@ void Contactors_step(void)
         Contactors_Y.ContactorsState = PermanentFailure;
       } else if (Contactors_DW.PreChargeRetryCheck <
                  Contactors_U.Thresholds.PreChargeRetryLimit) {
-        Contactors_DW.durationCounter_1_f = 0U;
+        Contactors_DW.durationCounter_1_e = 0U;
         Contactors_DW.is_ContactorOperations = Con_IN_PreCharging_Substate_New;
         Contactors_DW.is_PreCharging_Substate_New =
           Contactors_IN_PreCharge_Check03;
@@ -1374,7 +1350,7 @@ void Contactors_step(void)
       if (Contactors_B.PreIntegratedTime >
           Contactors_U.Thresholds.PreToClosed_Time_msec) {
         Contactors_B.PreTimeReset = 0.0;
-        Contactors_DW.durationCounter_1_b = 0U;
+        Contactors_DW.durationCounter_1_m = 0U;
         Contactors_DW.is_ContactorOperations = Contactors_IN_Closed_Substate;
 
         /* Outport: '<Root>/NegContactors' */
@@ -1393,7 +1369,7 @@ void Contactors_step(void)
         Contactors_Y.ContactorsState = ClosedSubstate;
       } else if ((int32_T)Contactors_U.PreChargeContactors_FB == 1) {
         Contactors_B.PreTimeReset = 0.0;
-        Contactors_DW.durationCounter_1_f = 0U;
+        Contactors_DW.durationCounter_1_e = 0U;
         Contactors_DW.is_ContactorOperations = Con_IN_PreCharging_Substate_New;
         Contactors_DW.is_PreCharging_Substate_New =
           Contactors_IN_PreCharge_Check02;
@@ -1442,10 +1418,6 @@ void Contactors_step(void)
       }
       break;
 
-     case Contactors_IN_Open_Substate:
-      Contactors_Open_Substate();
-      break;
-
      case Contacto_IN_NegContact_Check_02:
       Contactors_DW.is_ContactorOperations = Contactors_IN_Open_Substate;
 
@@ -1463,6 +1435,10 @@ void Contactors_step(void)
 
       /* Outport: '<Root>/ContactorsState' */
       Contactors_Y.ContactorsState = OpenSubstate;
+      break;
+
+     case Contactors_IN_Open_Substate:
+      Contactors_Open_Substate();
       break;
 
      case Contactors_IN_PermanentFail:
@@ -1514,12 +1490,12 @@ void Contactors_step(void)
 
   if (!Contactors_B.Flags_Detection) {
     Contactors_DW.durationCounter_1++;
-    Contactors_DW.durationCounter_1_f++;
-    Contactors_DW.durationCounter_1_b++;
+    Contactors_DW.durationCounter_1_e++;
+    Contactors_DW.durationCounter_1_m++;
   } else {
     Contactors_DW.durationCounter_1 = 0U;
-    Contactors_DW.durationCounter_1_f = 0U;
-    Contactors_DW.durationCounter_1_b = 0U;
+    Contactors_DW.durationCounter_1_e = 0U;
+    Contactors_DW.durationCounter_1_m = 0U;
   }
 
   /* End of Chart: '<S1>/Contactor_StateMachine' */
@@ -1599,11 +1575,6 @@ void Contactors_initialize(void)
   Contactors_DW.DiscreteTimeIntegrator_PrevRese = 0;
 
   /* SystemInitialize for Chart: '<S1>/Contactor_StateMachine' */
-  Contactors_DW.is_ContactorOperations = Contactors_IN_NO_ACTIVE_CHILD;
-  Contactors_DW.is_PreCharging_Substate_New = Contactors_IN_NO_ACTIVE_CHILD;
-  Contactors_DW.is_PreCharging_Substate_Old = Contactors_IN_NO_ACTIVE_CHILD;
-  Contactors_DW.is_active_c1_Contactors = 0U;
-  Contactors_DW.PreChargeRetryCheck = 0U;
   Contactors_B.PreTimeReset = 0.0;
 
   /* SystemInitialize for Outport: '<Root>/NegContactors' incorporates:
@@ -1635,6 +1606,13 @@ void Contactors_initialize(void)
    *  Chart: '<S1>/Contactor_StateMachine'
    */
   Contactors_Y.ContactorsState = OpenSubstate;
+
+  /* SystemInitialize for Chart: '<S1>/Contactor_StateMachine' */
+  Contactors_DW.PreChargeRetryCheck = 0U;
+  Contactors_DW.is_active_c1_Contactors = 0U;
+  Contactors_DW.is_ContactorOperations = Contactors_IN_NO_ACTIVE_CHILD;
+  Contactors_DW.is_PreCharging_Substate_New = Contactors_IN_NO_ACTIVE_CHILD;
+  Contactors_DW.is_PreCharging_Substate_Old = Contactors_IN_NO_ACTIVE_CHILD;
 }
 
 /* Model terminate function */
