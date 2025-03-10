@@ -68,14 +68,14 @@ ExtY_ChargingAlgorithm_T ChargingAlgorithm_Y;
 /* Real-time model */
 static RT_MODEL_ChargingAlgorithm_T ChargingAlgorithm_M_;
 RT_MODEL_ChargingAlgorithm_T *const ChargingAlgorithm_M = &ChargingAlgorithm_M_;
-const CC_OutputsBus ChargingAlgorithm_rtZCC_Outputs = { 0,/* Initial_Capacity_mAh */
-  0,                                   /* Total_CapacityRemains_mAh */
+const CC_OutputsBus ChargingAlgorithm_rtZCC_Outputs = {0,/* Total_CapacityRemains_mAh */
   0,                                   /* SOC_cpct */
   Vehicle_at_Rest,                     /* CC_State */
   0,                                   /* MaxUsableCapacity_mAh */
   0,                                   /* TotalCapacityExchange_mAh */
   0.0F,                                /* SOH_pct */
-  0.0F                                 /* SoH2 */
+  0.0F,                                /* SoH2 */
+  false                                /* EKF_resetTimer */
 };
 
 void MultiWordSignedWrap(const uint32_T u1[], int32_T n1, uint32_T n2, uint32_T

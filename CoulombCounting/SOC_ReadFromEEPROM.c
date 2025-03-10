@@ -51,11 +51,6 @@ void SOCEstimatio_SOC_ReadFromEEPROM(B_SOC_ReadFromEEPROM_SOCEstim_T *localB)
         }
         ReadFromFlashCounter = 1;
   }
-
-  else
-  {
-        localB->SoHCalcEn = false;
-  }
   
   if (debouncer < (CMU_FAIL_SUSPEND_COUNT + 1))
   {

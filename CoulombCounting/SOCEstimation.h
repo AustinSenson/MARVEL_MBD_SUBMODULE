@@ -30,6 +30,7 @@
 
 #include "SOCEstimation_types.h"
 #include "SOC_ReadFromEEPROM.h"
+#include <math.h>
 #include <stddef.h>
 #include <string.h>
 
@@ -44,32 +45,41 @@
 
 /* Block signals (default storage) */
 typedef struct {
+  real_T SoCEst;                       /* '<S8>/SOC_Estimator' */
   real32_T Switch;                     /* '<S5>/Switch' */
-  real32_T ModIntegratedCurrent;       /* '<S3>/Modulus IntegCurrent' */
-  real32_T IntegratedCurrent;          /* '<S3>/IntegCurrent' */
-  int32_T Effectiveusablecapacity;     /* '<S14>/Data Type Conversion1' */
-  int32_T capLatch;                    /* '<S3>/SOC_Calibration' */
-  int32_T TotalCapacityRemains_mAh;    /* '<S3>/SOC_Calibration' */
-  boolean_T calcSoH;                   /* '<S3>/SOC_Calibration' */
+  real32_T ModIntegratedCurrent;       /* '<S10>/Modulus IntegCurrent' */
+  real32_T IntegratedCurrent;          /* '<S10>/IntegCurrent' */
+  int32_T Effectiveusablecapacity;     /* '<S20>/Data Type Conversion1' */
+  int32_T capLatch;                    /* '<S8>/SOC_Estimator' */
+  int32_T TotalCapacityRemains_mAh;    /* '<S8>/SOC_Estimator' */
+  int32_T Initial_Capacity_mAh;        /* '<S8>/SOC_Estimator' */
   B_SOC_ReadFromEEPROM_SOCEstim_T sf_SOC_ReadFromEEPROM;/* '<S1>/SOC_ReadFromEEPROM' */
 } B_SOCEstimation_T;
 
 /* Block states (default storage) for system '<Root>' */
 typedef struct {
   real_T counter;                      /* '<S6>/MATLAB Function' */
-  CCState CCState_k;                   /* '<S3>/Unit Delay' */
-  int32_T CapacityRemains_mAh;         /* '<S1>/Data Store Memory' */
-  uint32_T temporalCounter_i1;         /* '<S3>/SOC_Calibration' */
-  uint32_T durationCounter_1;          /* '<S3>/SOC_Calibration' */
-  uint32_T durationCounter_1_c;        /* '<S3>/SOC_Calibration' */
-  uint32_T durationCounter_2;          /* '<S3>/SOC_Calibration' */
-  uint8_T is_active_c15_SOCEstimation; /* '<S3>/SOC_Calibration' */
-  uint8_T is_c15_SOCEstimation;        /* '<S3>/SOC_Calibration' */
-  uint8_T is_active_c20_SOCEstimation; /* '<S3>/Modulus IntegCurrent' */
-  uint8_T is_active_c42_SOCEstimation; /* '<S3>/IntegCurrent' */
-  uint8_T is_c42_SOCEstimation;        /* '<S3>/IntegCurrent' */
+  real_T x;                            /* '<S8>/SOC_Estimator' */
+  real_T EKF_P;                        /* '<S8>/SOC_Estimator' */
+  real_T H_prev;                       /* '<S8>/SOC_Estimator' */
+  real_T filteredVoltage;              /* '<S8>/SOC_Estimator' */
+  int32_T Delay1_DSTATE;               /* '<S9>/Delay1' */
+  int32_T Delay_DSTATE;                /* '<S9>/Delay' */
+  int32_T Delay1_DSTATE_m;             /* '<S3>/Delay1' */
+  CCState UnitDelay_DSTATE;            /* '<S3>/Unit Delay' */
+  int32_T initialSoC;                  /* '<S8>/SOC_Estimator' */
+  uint32_T temporalCounter_i1;         /* '<S8>/SOC_Estimator' */
+  uint32_T durationCounter_1;          /* '<S8>/SOC_Estimator' */
+  uint32_T durationCounter_2;          /* '<S8>/SOC_Estimator' */
+  uint32_T durationCounter_1_l;        /* '<S8>/SOC_Estimator' */
+  uint32_T durationCounter_3;          /* '<S8>/SOC_Estimator' */
+  uint8_T is_active_c20_SOCEstimation; /* '<S10>/Modulus IntegCurrent' */
+  uint8_T is_active_c42_SOCEstimation; /* '<S10>/IntegCurrent' */
+  uint8_T is_c42_SOCEstimation;        /* '<S10>/IntegCurrent' */
+  uint8_T is_active_c15_SOCEstimation; /* '<S8>/SOC_Estimator' */
+  uint8_T is_c15_SOCEstimation;        /* '<S8>/SOC_Estimator' */
   boolean_T counter_not_empty;         /* '<S6>/MATLAB Function' */
-  boolean_T latchMake;                 /* '<S3>/SOC_Calibration' */
+  boolean_T resetEKF;                  /* '<S8>/SOC_Estimator' */
   boolean_T SoHcalculation_MODE;       /* '<S1>/SoH calculation' */
 } DW_SOCEstimation_T;
 
@@ -77,8 +87,8 @@ typedef struct {
 typedef struct {
   DataPipelineBus DataPipeline;        /* '<Root>/DataPipeline' */
   int32_T Current_mA;                  /* '<Root>/Current_mA' */
+  EKF_InputsBus EKF_Inputs;            /* '<Root>/EKF_Inputs' */
   CC_InputsBus CC_Inputs;              /* '<Root>/CC_Inputs' */
-  CellBalancingOutputBus CellBalancingOutput;/* '<Root>/CellBalancingOutput' */
   real_T looptimeSoC; /* Added variable */
 } ExtU_SOCEstimation_T;
 
@@ -105,7 +115,6 @@ extern ExtU_SOCEstimation_T SOCEstimation_U;
 extern ExtY_SOCEstimation_T SOCEstimation_Y;
 
 /* External data declarations for dependent source files */
-extern const CellBalancingOutputBus SOCEstimation_rtZCellBalancingO;/* CellBalancingOutputBus ground */
 extern const CC_OutputsBus SOCEstimation_rtZCC_OutputsBus;/* CC_OutputsBus ground */
 
 /* Model entry point functions */
@@ -123,13 +132,33 @@ extern RT_MODEL_SOCEstimation_T *const SOCEstimation_M;
  * Block '<S1>/Display1' : Unused code path elimination
  * Block '<S1>/Display2' : Unused code path elimination
  * Block '<S1>/Display3' : Unused code path elimination
- * Block '<S11>/Data Type Duplicate' : Unused code path elimination
- * Block '<S11>/Data Type Propagation' : Unused code path elimination
+ * Block '<S1>/Display5' : Unused code path elimination
+ * Block '<S1>/Display6' : Unused code path elimination
+ * Block '<S1>/Display7' : Unused code path elimination
+ * Block '<S1>/Display8' : Unused code path elimination
+ * Block '<S8>/Display' : Unused code path elimination
+ * Block '<S14>/Data Type Duplicate' : Unused code path elimination
+ * Block '<S14>/Data Type Propagation' : Unused code path elimination
+ * Block '<S8>/Scope' : Unused code path elimination
+ * Block '<S3>/Display' : Unused code path elimination
+ * Block '<S3>/Display1' : Unused code path elimination
+ * Block '<S3>/Display2' : Unused code path elimination
+ * Block '<S3>/Display3' : Unused code path elimination
+ * Block '<S9>/Display' : Unused code path elimination
+ * Block '<S9>/Display1' : Unused code path elimination
+ * Block '<S9>/Display2' : Unused code path elimination
+ * Block '<S9>/Display3' : Unused code path elimination
+ * Block '<S9>/Display4' : Unused code path elimination
+ * Block '<S9>/Display5' : Unused code path elimination
+ * Block '<S9>/Display6' : Unused code path elimination
+ * Block '<S9>/Display7' : Unused code path elimination
+ * Block '<S10>/Display' : Unused code path elimination
  * Block '<S3>/Scope' : Unused code path elimination
+ * Block '<S3>/Scope1' : Unused code path elimination
  * Block '<S5>/Display' : Unused code path elimination
  * Block '<S5>/Display1' : Unused code path elimination
  * Block '<S1>/Data Type Conversion' : Eliminate redundant data type conversion
- * Block '<S3>/Data Type Conversion2' : Eliminate redundant data type conversion
+ * Block '<S8>/Data Type Conversion2' : Eliminate redundant data type conversion
  */
 
 /*-
@@ -155,17 +184,23 @@ extern RT_MODEL_SOCEstimation_T *const SOCEstimation_M;
  * '<S3>'   : 'v00_0A_0F/SOCEstimation/SOC_Calc'
  * '<S4>'   : 'v00_0A_0F/SOCEstimation/SOC_ReadFromEEPROM'
  * '<S5>'   : 'v00_0A_0F/SOCEstimation/SoH calculation'
- * '<S6>'   : 'v00_0A_0F/SOCEstimation/Subsystem'
+ * '<S6>'   : 'v00_0A_0F/SOCEstimation/Subsystem1'
  * '<S7>'   : 'v00_0A_0F/SOCEstimation/powergui'
- * '<S8>'   : 'v00_0A_0F/SOCEstimation/SOC_Calc/IntegCurrent'
- * '<S9>'   : 'v00_0A_0F/SOCEstimation/SOC_Calc/Modulus IntegCurrent'
- * '<S10>'  : 'v00_0A_0F/SOCEstimation/SOC_Calc/SOC_Calibration'
- * '<S11>'  : 'v00_0A_0F/SOCEstimation/SOC_Calc/Saturation Dynamic2'
- * '<S12>'  : 'v00_0A_0F/SOCEstimation/SoH calculation/SoH calculation'
- * '<S13>'  : 'v00_0A_0F/SOCEstimation/SoH calculation/SoH1 calculation'
- * '<S14>'  : 'v00_0A_0F/SOCEstimation/SoH calculation/efff_usable_Capacity'
- * '<S15>'  : 'v00_0A_0F/SOCEstimation/SoH calculation/SoH calculation/SoH Blend'
- * '<S16>'  : 'v00_0A_0F/SOCEstimation/SoH calculation/SoH1 calculation/MATLAB Function'
- * '<S17>'  : 'v00_0A_0F/SOCEstimation/Subsystem/MATLAB Function'
+ * '<S8>'   : 'v00_0A_0F/SOCEstimation/SOC_Calc/Capacity Estimator'
+ * '<S9>'   : 'v00_0A_0F/SOCEstimation/SOC_Calc/EKFStateChangeChecker'
+ * '<S10>'  : 'v00_0A_0F/SOCEstimation/SOC_Calc/Integrators'
+ * '<S11>'  : 'v00_0A_0F/SOCEstimation/SOC_Calc/MATLAB Function'
+ * '<S12>'  : 'v00_0A_0F/SOCEstimation/SOC_Calc/SoC estimator'
+ * '<S13>'  : 'v00_0A_0F/SOCEstimation/SOC_Calc/Capacity Estimator/SOC_Estimator'
+ * '<S14>'  : 'v00_0A_0F/SOCEstimation/SOC_Calc/Capacity Estimator/Saturation Dynamic2'
+ * '<S15>'  : 'v00_0A_0F/SOCEstimation/SOC_Calc/EKFStateChangeChecker/MATLAB Function'
+ * '<S16>'  : 'v00_0A_0F/SOCEstimation/SOC_Calc/Integrators/IntegCurrent'
+ * '<S17>'  : 'v00_0A_0F/SOCEstimation/SOC_Calc/Integrators/Modulus IntegCurrent'
+ * '<S18>'  : 'v00_0A_0F/SOCEstimation/SoH calculation/SoH calculation'
+ * '<S19>'  : 'v00_0A_0F/SOCEstimation/SoH calculation/SoH1 calculation'
+ * '<S20>'  : 'v00_0A_0F/SOCEstimation/SoH calculation/efff_usable_Capacity'
+ * '<S21>'  : 'v00_0A_0F/SOCEstimation/SoH calculation/SoH calculation/SoH Blend'
+ * '<S22>'  : 'v00_0A_0F/SOCEstimation/SoH calculation/SoH1 calculation/MATLAB Function'
+ * '<S23>'  : 'v00_0A_0F/SOCEstimation/Subsystem1/MATLAB Function'
  */
 #endif                                 /* SOCEstimation_h_ */

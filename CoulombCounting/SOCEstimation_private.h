@@ -1,28 +1,31 @@
 /*
  * SOCEstimation_private.h
  *
- * Academic License - for use in teaching, academic research, and meeting
- * course requirements at degree granting institutions only.  Not for
- * government, commercial, or other organizational use.
- *
  * Code generation for model "SOCEstimation".
  *
- * Model version              : 7.37
- * Simulink Coder version : 24.1 (R2024a) 19-Nov-2023
- * C source code generated on : Mon Dec 30 19:09:45 2024
+ * Model version              : 7.160
+ * Simulink Coder version     : 24.1 (R2024a)
+ * C source code generated on : Mon Feb 17 13:54:37 2025
  *
  * Target selection: grt.tlc
- * Note: GRT includes extra infrastructure and instrumentation for prototyping
- * Embedded hardware selection: ARM Compatible->ARM Cortex-M
- * Code generation objective: Execution efficiency
- * Validation result: All passed
+ * Embedded hardware: ARM Cortex-M
  */
 
-#ifndef SOCEstimation_private_h_
-#define SOCEstimation_private_h_
+#ifndef SOCEstimation_PRIVATE_H_
+#define SOCEstimation_PRIVATE_H_
+
 #include "rtwtypes.h"
 #include "multiword_types.h"
 #include "SOCEstimation_types.h"
+#include "SOCEstimation.h"
 #include "rtw_continuous.h"
 #include "rtw_solver.h"
-#endif                                 /* SOCEstimation_private_h_ */
+#include <limits.h>
+
+extern real_T rt_roundd(real_T u);
+extern real_T sMultiWord2Double(const uint32_T u1[], int32_T n1, int32_T e1);
+extern void sMultiWordMul_cc(const uint32_T u1[], int32_T n1, const uint32_T u2[], int32_T n2, uint32_T y[], int32_T n);
+extern void mul_wide_s32_cc(int32_T in0, int32_T in1, uint32_T *ptrOutBitsHi, uint32_T *ptrOutBitsLo);
+extern int32_T mul_s32_sat_cc(int32_T a, int32_T b);
+
+#endif /* SOCEstimation_PRIVATE_H_ */
